@@ -2,9 +2,11 @@
 
 Python implementation for [ProtobufBot](https://github.com/ProtobufBot/onebot_idl) Server.
 
+**This project is still WORK IN PROGRESS, DO NOT use for production.**
+
 # How to use
 
-First, you need `pip install pypbbot`
+First, you need to `pip install pypbbot`
 
 Second, write your `echobot.py`as above:
 
@@ -43,7 +45,7 @@ bot:
     ws-url: "ws://localhost:8082/ws/test/"
 ```
 
-Restart the client, Then it should be able to connect the `echobot.py` in  example.
+Restart the client, Then it should be able to connect to the `echobot.py` in  example.
 
 # Still Work In Progress
 Current version has only implemented the little subset of ProtobufBotAPI. More functions are going to be added in future versions.

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pypbbot",
-    version="0.1a1",
+    version="0.1a2",
     author="Kale1d0",
     author_email="kale1d0@qq.com",
     description="Python implementation for ProtobufBot Server.",
