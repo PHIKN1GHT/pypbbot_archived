@@ -14,4 +14,4 @@ class SimpleDriver(BaseDriver):
 app.default_driver = SimpleDriver
 
 if __name__ == '__main__':
-    run_server(app='example:app', host='localhost', port=8082, reload=True, debug=True, workers=2)
+    run_server(app='example:app', host='localhost', port=8082, reload=True, debug=True)
