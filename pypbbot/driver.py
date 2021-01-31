@@ -53,7 +53,7 @@ class BaseDriver:
         api_content = SendPrivateMsgReq()
         api_content.message.append(textmsg)
         api_content.user_id, auto_escape = user_id, True
-        await server.send_frame(self, api_content)
+        return await server.send_frame(self, api_content)
 
     async def sendGroupTextMessage(self, group_id, text):
         textmsg = Message()
@@ -61,4 +61,4 @@ class BaseDriver:
         api_content = SendGroupMsgReq()
         api_content.message.append(textmsg)
         api_content.group_id, auto_escape = group_id, True
-        await server.send_frame(self, api_content)
+        return await server.send_frame(self, api_content)
