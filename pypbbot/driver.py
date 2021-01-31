@@ -1,7 +1,7 @@
 from pypbbot.protocol import *
 from pypbbot import server
 
-class SimpleDriver:
+class BaseDriver:
     def __init__(self, botId):
         self.botId = botId
         self._handler_registry = {}
@@ -47,13 +47,18 @@ class SimpleDriver:
     async def onGroupRequest(self, event):
         pass
 
-    async def sendPrivateMsg(self, user_id, text):
-        msg = Message()
-        msg.type = "text"
-        msg.data["text"] = text
+    async def sendPrivateTextMessage(self, user_id, text):
+        textmsg = Message()
+        textmsg.type, textmsg.data["text"] = "text", text
+        api_content = SendPrivateMsgReq()
+        api_content.message.append(textmsg)
+        api_content.user_id, auto_escape = user_id, True
+        await server.send_frame(self, api_content)
 
-        retmsg = SendPrivateMsgReq()
-        retmsg.message.append(msg)
-        retmsg.user_id = user_id
-        retmsg.auto_escape = True
-        await server.send_frame(self, retmsg)
+    async def sendGroupTextMessage(self, group_id, text):
+        textmsg = Message()
+        textmsg.type, textmsg.data["text"] = "text", text
+        api_content = SendGroupMsgReq()
+        api_content.message.append(textmsg)
+        api_content.group_id, auto_escape = group_id, True
+        await server.send_frame(self, api_content)
