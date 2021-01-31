@@ -3,76 +3,67 @@ import uvicorn
 
 from fastapi import FastAPI, WebSocket
 
-from pypbbot.protocol.onebot_frame_pb2 import Frame
-from pypbbot.protocol.onebot_event_pb2 import PrivateMessageEvent, GroupMessageEvent
-from pypbbot.protocol.onebot_api_pb2 import SendPrivateMsgReq, SendGroupMsgReq
-from pypbbot.protocol.onebot_base_pb2 import Message
+from pypbbot import protocol
+from pypbbot.protocol import Frame
+from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
+from pypbbot.protocol import SendPrivateMsgReq, SendGroupMsgReq
+from pypbbot.protocol import Message
+
+from pypbbot.driver import SimpleDriver as simple_driver
+from pypbbot.utils import in_lower_case
 
 app = FastAPI()
 
+def api_check():
+    for entry in protocol.__dict__:
+        if entry.endswith('Req') or entry.endswith('Resp') or entry.endswith('Event'):
+            assert getattr(Frame.FrameType, 'T' + entry) != None
+
+drivers = {}
 @app.websocket("/ws/test/")
-async def recv_msg(websocket: WebSocket):
+async def recv_frame(websocket: WebSocket):
     await websocket.accept()
     while True:
-        data = await websocket.receive_bytes()
-        msg = Frame()
-        msg.ParseFromString(data) 
-        print(msg.IsInitialized())
+        rawdata = await websocket.receive_bytes()
+        frame = Frame()
+        frame.ParseFromString(rawdata)
 
-        
-        if type(getattr(msg, msg.WhichOneof('data'))) == PrivateMessageEvent:
-            print('RECV: ', msg)
-            pmsg = getattr(msg, msg.WhichOneof('data'))
+        if not frame.botId in drivers.keys():
+            drivers[frame.botId] = (websocket, app.default_driver(frame.botId))
+        else:
+            _, dri = drivers[frame.botId]
+            drivers[frame.botId] = (websocket, dri)
 
-            frame = Frame()
-            frame.botId = pmsg.self_id
-            frame.frame_type = Frame.FrameType.TSendPrivateMsgReq
-            frame.echo = ""
-            frame.ok = True
+        ws, driver = drivers[frame.botId]
+        await driver.handle(getattr(frame, frame.WhichOneof('data')))
 
-            retmsg = SendPrivateMsgReq()
-            msgtext = Message()
-            msgtext.type = "text"
-            msgtext.data["text"] = 'qwq!'
-            retmsg.message.append(msgtext)
-            retmsg.user_id = pmsg.user_id
-            retmsg.auto_escape = True
-            frame.send_private_msg_req.CopyFrom(retmsg)
-
-            data = frame.SerializeToString()
-            await websocket.send_bytes(data)
-        elif type(getattr(msg, msg.WhichOneof('data'))) == GroupMessageEvent:
-            pmsg = getattr(msg, msg.WhichOneof('data'))
-
-            frame = Frame()
-            frame.botId = pmsg.self_id
-            frame.frame_type = Frame.FrameType.TSendGroupMsgReq
-            frame.echo = ""
-            frame.ok = True
-
-            retmsg = SendGroupMsgReq()
-            msgtext = Message()
-            msgtext.type = "text"
-            msgtext.data["text"] = 'qwq!'
-            retmsg.message.append(msgtext)
-            retmsg.group_id = pmsg.group_id
-            retmsg.auto_escape = True
-            frame.send_group_msg_req.CopyFrom(retmsg)
-
-            data = frame.SerializeToString()
-            await websocket.send_bytes(data)
-
-def run_server(host:str  = 'localhost', port:int = 8082) -> None:
-    uvicorn.run(app='pypbbot.server:app', host=host, port=port, reload=True, debug=True)
-'''
-    start_server = websockets.serve(main_logic, ip, port)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(start_server)
+async def send_frame(driver, content):
+    frame = Frame()
+    ws, _ = drivers[driver.botId]
+    frame.botId, echo, ok = driver.botId, '', True
     try:
-        asyncio.get_event_loop().run_forever()
-    except KeyboardInterrupt:
-        pass
+        frame.frame_type = getattr(Frame.FrameType, 'T' + type(content).__name__)
+        getattr(frame, in_lower_case(type(content).__name__)).CopyFrom(content)
+        data = frame.SerializeToString()
+        await ws.send_bytes(data)
     finally:
-        loop.close()
+        pass
+
+def run_server(**kwargs):
+    uvicorn.run(**kwargs)
+
 '''
+    retmsg = SendGroupMsgReq()
+    msgtext = Message()
+    msgtext.type = "text"
+    msgtext.data["text"] = 'qwq!'
+    retmsg.message.append(msgtext)
+    retmsg.group_id = pmsg.group_id
+    retmsg.auto_escape = True
+    frame.send_group_msg_req.CopyFrom(retmsg)
+
+    data = frame.SerializeToString()
+    await websocket.send_bytes(data)'''
+
+
 
