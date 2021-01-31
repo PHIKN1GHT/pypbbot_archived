@@ -1,14 +1,14 @@
 # PyProtobufBot
 
-Python implementation for [ProtobufBot](https://github.com/ProtobufBot/onebot_idl) Server.
+本项目为[ProtobufBot](https://github.com/ProtobufBot/onebot_idl)协议服务端的Python语言实现。
 
-**This project is still WORK IN PROGRESS, DO NOT use for production.**
+注意，本项目仍处于**早期开发阶段**，请勿用于生产环境。
 
-# How to use
+# 如何使用
 
-First, you need to `pip install pypbbot`
+首先，运行 `pip install --upgrade pypbbot` 以安装本项目或更新至最新版本。
 
-Second, write your `echobot.py`as above:
+其次，按照如下方式编写代码文件 `echobot.py` ：
 
 ``` python
 from pypbbot import app, run_server, BaseDriver
@@ -29,23 +29,33 @@ if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
 ```
 
-Finally, start the client and run `python echobot.py` 
+最后，启动协议客户端并运行 `python echobot.py` 。
 
-Have fun!
+# 设置协议客户端 
 
-# Setting the Client 
+推荐的协议客户端: [Go-Mirai-Client](https://github.com/ProtobufBot/Go-Mirai-Client)
 
-Recommended Client: [Go-Mirai-Client](https://github.com/ProtobufBot/Go-Mirai-Client)
+首先，下载协议客户端并按照文档对其进行编译，随后在控制台中执行以下代码以设置环境变量：
 
-Download and compile, then open the client program, edit `application.yml` like above:
+Windows下：
 
-```yaml
-bot:
-  client:
-    ws-url: "ws://localhost:8082/ws/test/"
+```bat
+set UIN=QQ号
+set PASSWORD=QQ密码
+set WS_URL=ws://localhost:8082/ws/test/
 ```
 
-Restart the client, Then it should be able to connect to the `echobot.py` in  example.
+Linux下：
 
-# Still Work In Progress
-Current version has only implemented the little subset of ProtobufBotAPI. More functions are going to be added in future versions.
+
+```bash
+export UIN=QQ号
+export PASSWORD=QQ密码
+export WS_URL=ws://localhost:8082/ws/test/
+```
+
+随后，启动协议客户端，它就能够与前文中的 `echobot.py` 例程进行通信。
+
+# 关于开发进度
+
+当前版本仅实现了`ProtobufBotAPI`的一个子集（发送私聊和群聊消息）。稍后将继续加入更多功能。
