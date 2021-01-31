@@ -1,8 +1,9 @@
 from pypbbot import app, run_server, SimpleDriver
+from pypbbot.protocol import PrivateMessageEvent 
 
 class MyDriver(SimpleDriver):
-    async def onPrivateMessage(self, event):
-        await self.sendPrivateMsg(event.user_id, 'msg!')
+    async def onPrivateMessage(self, event: PrivateMessageEvent):
+        await self.sendPrivateMsg(event.user_id, 'echo: ' + event.raw_message)
 
 app.default_driver = MyDriver
 
