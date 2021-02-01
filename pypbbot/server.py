@@ -1,39 +1,35 @@
-import sys, os
-import uvicorn, asyncio
+import os, sys
+import uvicorn # type: ignore
+import asyncio
 import uuid
 
 from fastapi import FastAPI, WebSocket, BackgroundTasks
+from typing import Tuple, Dict
+from asyncio import Future
 
-from pypbbot import protocol
-from pypbbot.protocol import Frame
-from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-from pypbbot.protocol import SendPrivateMsgReq, SendGroupMsgReq
-from pypbbot.protocol import Message
-
-from pypbbot.driver import BaseDriver as base_driver
+from pypbbot.driver import BaseDriver
 from pypbbot.utils import in_lower_case
+from pypbbot.types import ProtobufBotAPI
+from pypbbot.types import ProtobufBotFrame as Frame
+from pypbbot.types import ProtobufBotMessage as Message
 
 app = FastAPI()
 
-def api_check():
-    for entry in protocol.__dict__:
-        if entry.endswith('Req') or entry.endswith('Resp') or entry.endswith('Event'):
-            assert getattr(Frame.FrameType, 'T' + entry) != None
-
-drivers = {}
-resp = {}
+drivers: Dict[int, Tuple[WebSocket, BaseDriver]] = {}
+resp: Dict[str, Future] = {}
 
 @app.websocket("/ws/test/")
-async def handle_websocket(websocket: WebSocket):
+async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
-        rawdata = await websocket.receive_bytes()
+        rawdata: bytes = await websocket.receive_bytes()
         frame = Frame()
         frame.ParseFromString(rawdata)
         if not frame.botId in drivers.keys():
             if not hasattr(app, 'default_driver'):
-                app.default_driver = base_driver
-            drivers[frame.botId] = (websocket, app.default_driver(frame.botId))
+                setattr(app, 'default_driver', BaseDriver)
+                getattr(app, 'default_driver')
+            drivers[frame.botId] = (websocket, getattr(app, 'default_driver')(frame.botId))
         else:
             _, dri = drivers[frame.botId]
             drivers[frame.botId] = (websocket, dri)
@@ -41,14 +37,14 @@ async def handle_websocket(websocket: WebSocket):
         ws, driver = drivers[frame.botId]
         asyncio.create_task(recv_frame(frame, driver))
 
-async def recv_frame(frame, driver):
+async def recv_frame(frame: Frame, driver: BaseDriver) -> None:
     if Frame.FrameType.Name(frame.frame_type).endswith('Event'):
         await driver.handle(getattr(frame, frame.WhichOneof('data')))
     else:
         if frame.echo in resp.keys():
             resp[frame.echo].set_result(getattr(frame, frame.WhichOneof('data')))
 
-async def send_frame(driver, api_content):
+async def send_frame(driver: BaseDriver, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
     frame = Frame()
     ws, _ = drivers[driver.botId]
     frame.botId, frame.echo, frame.ok = driver.botId, str(uuid.uuid1()), True
