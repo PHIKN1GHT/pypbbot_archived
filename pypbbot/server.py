@@ -42,7 +42,10 @@ async def recv_frame(frame: Frame, driver: BaseDriver) -> None:
         await driver.handle(getattr(frame, frame.WhichOneof('data')))
     else:
         if frame.echo in resp.keys():
-            resp[frame.echo].set_result(getattr(frame, frame.WhichOneof('data')))
+            if isinstance(frame.WhichOneof('data'), str):
+                resp[frame.echo].set_result(getattr(frame, frame.WhichOneof('data')))
+            else:
+                resp[frame.echo].set_result(None)
 
 async def send_frame(driver: BaseDriver, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
     frame = Frame()

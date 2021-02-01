@@ -1,7 +1,10 @@
+from functools import partial
+
 from pypbbot.protocol import *
 from pypbbot.types import ProtobufBotEvent, ProtobufBotAPI
 from pypbbot import server
-from typing import Type, Dict, Callable, Awaitable, Optional
+from pypbbot.utils import Clips
+from typing import Type, Dict, Callable, Awaitable, Optional, Union
 
 class BaseDriver:
     def __init__(self, botId: int):
@@ -23,6 +26,13 @@ class BaseDriver:
     async def handle(self, event: ProtobufBotEvent):
         if type(event) in self._handler_registry.keys():
             await self._handler_registry[type(event)](event)
+    
+
+    async def sendBackClips(self, event: Union[PrivateMessageEvent, GroupMessageEvent], clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
+        if isinstance(event, PrivateMessageEvent):
+            return await self.sendPrivateClips(event.user_id, clips)
+        elif isinstance(event, GroupMessageEvent):
+            return await self.sendGroupClips(event.group_id, clips)
 
     async def onPrivateMessage(self, event: PrivateMessageEvent) -> Optional[bool]:
         pass
@@ -49,18 +59,31 @@ class BaseDriver:
     async def onGroupRequest(self, event: GroupRequestEvent) -> Optional[bool]:
         pass
 
-    async def sendPrivateTextMessage(self, user_id: int, text: str) -> ProtobufBotAPI:
-        textmsg = Message()
-        textmsg.type, textmsg.data["text"] = "text", text
+    async def sendPrivateClips(self, user_id: int, clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
+        clips = Clips() + clips
         api_content = SendPrivateMsgReq()
-        api_content.message.append(textmsg)
         api_content.user_id, auto_escape = user_id, True
+        for datum in clips._data:
+            textmsg = Message()
+            textmsg.type = datum[0]
+            for item in datum[1].keys():
+                textmsg.data[item] = datum[1][item]
+            api_content.message.append(textmsg)
         return await server.send_frame(self, api_content)
 
-    async def sendGroupTextMessage(self, group_id: int, text: str) -> ProtobufBotAPI:
-        textmsg = Message()
-        textmsg.type, textmsg.data["text"] = "text", text
+    async def sendGroupClips(self, group_id: int, clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
+        clips = Clips() + clips
         api_content = SendGroupMsgReq()
-        api_content.message.append(textmsg)
         api_content.group_id, auto_escape = group_id, True
+        for datum in clips._data:
+            textmsg = Message()
+            textmsg.type = datum[0]
+            for item in datum[1].keys():
+                textmsg.data[item] = datum[1][item]
+            api_content.message.append(textmsg)
+        return await server.send_frame(self, api_content)
+
+    async def recallMessage(self, message_id: int) -> ProtobufBotAPI:
+        api_content = DeleteMsgReq()
+        api_content.message_id = message_id
         return await server.send_frame(self, api_content)

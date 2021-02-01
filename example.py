@@ -1,14 +1,34 @@
 from pypbbot import app, run_server, BaseDriver
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
+from pypbbot.utils import Clips
+from typing import Union
+import asyncio
 
+akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 class SimpleDriver(BaseDriver):
-    async def onPrivateMessage(self, event: PrivateMessageEvent):
-        if event.raw_message.startswith('#echo '):
-            await self.sendPrivateTextMessage(event.user_id, event.raw_message.replace('#echo ', ''))
+    async def sayHello(self, event: Union[GroupMessageEvent, PrivateMessageEvent]):
+        resp = await self.sendBackClips(event, 'Hello, world!')
+        await asyncio.sleep(1)
+        await self.sendBackClips(event, 3)
+        await asyncio.sleep(1)
+        await self.sendBackClips(event, 2)
+        await asyncio.sleep(1)
+        await self.sendBackClips(event, 1.111)
+        await asyncio.sleep(1)
+        await self.sendBackClips(event, 
+            Clips.from_image_url(akkarin_url) + '\n\阿卡林/\阿卡林/\阿卡林/')
+        await asyncio.sleep(3)
+        print(resp.message_id)
+        await self.recallMessage(resp.message_id)
+
 
     async def onGroupMessage(self, event: GroupMessageEvent):
-        if event.raw_message.startswith('#echo '):
-            await self.sendGroupTextMessage(event.group_id, event.raw_message.replace('#echo ', ''))
+        if event.raw_message.startswith('#hello'):
+            await self.sayHello(event)
+
+    async def onPrivateMessage(self, event: PrivateMessageEvent):
+        if event.raw_message.startswith('#hello'):
+            await self.sayHello(event)
 
 setattr(app, 'default_driver', SimpleDriver)
 
