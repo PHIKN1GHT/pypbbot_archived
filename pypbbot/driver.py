@@ -1,4 +1,5 @@
 from functools import partial
+import os
 
 from pypbbot.protocol import *
 from pypbbot.types import ProtobufBotEvent, ProtobufBotAPI
@@ -87,3 +88,16 @@ class BaseDriver:
         api_content = DeleteMsgReq()
         api_content.message_id = message_id
         return await server.send_frame(self, api_content)
+
+from pypbbot.utils import SingletonType
+import pkgutil
+class PluginDriver(BaseDriver, metaclass=SingletonType):
+    def __new__(cls, *args, **kwargs):
+        return object.__new__(cls)
+
+    def __init__(self, plugin_path='plugins'):
+        pass
+
+    async def handle(self, event: ProtobufBotEvent):
+        if type(event) in self._handler_registry.keys():
+            await self._handler_registry[type(event)](event)

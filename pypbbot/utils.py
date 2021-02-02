@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, TypeVar, Union
+from typing import List, Tuple, Dict, TypeVar, Union, Type
 from pypbbot.types import ProtobufBotMessage
 import copy
 
@@ -43,9 +43,19 @@ class Clips():
         return reprstr
 
     @classmethod
-    def from_str(cls:T, text: str) -> T:
-        return Clips().append(("text", {"text": text}))
+    def from_str(cls: Type[T], text: str) -> T:
+        return cls().append(("text", {"text": text}))
 
     @classmethod
-    def from_image_url(cls:T, url: str) -> T:
-        return Clips().append(("image", {"url": url}))
+    def from_image_url(cls: Type[T], url: str) -> T:
+        return cls().append(("image", {"url": url}))
+
+import threading
+class SingletonType(type):
+    _instance_lock = threading.Lock()
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, "_instance"):
+            with SingletonType._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super(SingletonType,cls).__call__(*args, **kwargs)
+        return cls._instance
