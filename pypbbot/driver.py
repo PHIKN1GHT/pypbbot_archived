@@ -90,6 +90,8 @@ class BaseDriver:
         return await server.send_frame(self, api_content)
 
 from pypbbot.utils import SingletonType
+from pypbbot.plugin import _handle as handleAffair
+from pypbbot.affairs import BaseAffair
 import pkgutil
 class PluginDriver(BaseDriver, metaclass=SingletonType):
     def __new__(cls, *args, **kwargs):
@@ -99,5 +101,8 @@ class PluginDriver(BaseDriver, metaclass=SingletonType):
         pass
 
     async def handle(self, event: ProtobufBotEvent):
-        if type(event) in self._handler_registry.keys():
-            await self._handler_registry[type(event)](event)
+        affair = BaseAffair()
+        affair.event = event
+        handleAffair(affair)
+        #if type(event) in self._handler_registry.keys():
+        #    await self._handler_registry[type(event)](event)

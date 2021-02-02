@@ -12,7 +12,8 @@ from pypbbot.utils import in_lower_case
 from pypbbot.types import ProtobufBotAPI
 from pypbbot.types import ProtobufBotFrame as Frame
 from pypbbot.types import ProtobufBotMessage as Message
-from pypbbot.log import logger
+from pypbbot.log import logger, LOG_CONFIG
+from pypbbot.plugin import load_plugins
 
 app = FastAPI()
 
@@ -21,8 +22,9 @@ resp: Dict[str, Future] = {}
 
 @app.on_event("startup")
 async def init():
-    logger.info('Hello, PyProtobufBot world!')
-
+    if (hasattr(app, 'plugin_path')):
+        load_plugins(getattr(app, 'plugin_path'))
+    logger.info('Everything is almost ready. Hello, PyProtobufBot world!')
 
 @app.on_event("shutdown")
 async def close():
@@ -49,7 +51,9 @@ async def handle_websocket(websocket: WebSocket) -> None:
         asyncio.create_task(recv_frame(frame, driver))
 
 async def recv_frame(frame: Frame, driver: BaseDriver) -> None:
-    if Frame.FrameType.Name(frame.frame_type).endswith('Event'):
+    frame_type = Frame.FrameType.Name(frame.frame_type)
+    logger.debug('Recv frame [{}] from client [{}]'.format(frame_type, frame.botId))
+    if frame_type.endswith('Event'):
         await driver.handle(getattr(frame, frame.WhichOneof('data')))
     else:
         if frame.echo in resp.keys():
@@ -65,36 +69,11 @@ async def send_frame(driver: BaseDriver, api_content: ProtobufBotAPI) -> Protobu
     frame.frame_type = getattr(Frame.FrameType, 'T' + type(api_content).__name__)
     getattr(frame, in_lower_case(type(api_content).__name__)).CopyFrom(api_content)
     data = frame.SerializeToString()
+    frame_type = Frame.FrameType.Name(frame.frame_type)
+    logger.debug('Send frame [{}] to client [{}]'.format(frame_type, frame.botId))
     await ws.send_bytes(data)
     resp[frame.echo] = asyncio.get_event_loop().create_future()
     return await asyncio.wait_for(resp[frame.echo], 60)
-    
-from uvicorn.supervisors import Multiprocess
-from uvicorn.server import Server
-from uvicorn.config import Config
-from pypbbot.utils import LoggableReload
 
-def run_server(app, **kwargs):
-    config = Config(app, **kwargs)
-    server = Server(config=config)
-
-    driver: BaseDriver = getattr(app, 'default_driver', BaseDriver)
-    logger.info('Using driver: {}'.format(driver.__name__))
-    logger.info('Start serving on {}:{}'.format(config.host, config.port))
-
-    if (config.reload or config.workers > 1) and not isinstance(app, str):
-        logger.warning("[app] should be an import string to enable 'reload' or 'workers'.")
-        sys.exit(1)
-
-    if config.should_reload:
-        logger.info('Auto reloading has been enabled.')
-        sock = config.bind_socket()
-        supervisor = LoggableReload(config, target=server.run, sockets=[sock])
-        supervisor.run()
-
-    elif config.workers > 1:
-        sock = config.bind_socket()
-        supervisor = Multiprocess(config, target=server.run, sockets=[sock])
-        supervisor.run()
-    else:
-        server.run()
+def run_server(**kwargs): # type: ignore
+    uvicorn.run(log_config = LOG_CONFIG, **kwargs)

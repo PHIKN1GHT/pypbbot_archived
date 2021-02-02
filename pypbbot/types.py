@@ -10,3 +10,13 @@ ProtobufBotEvent = Union[onebot_event_pb2.PrivateMessageEvent, onebot_event_pb2.
 ProtobufBotFrame = onebot_frame_pb2.Frame
 
 ProtobufBotMessage = onebot_base_pb2.Message
+
+import threading
+class SingletonType(type):
+    _instance_lock = threading.Lock()
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, "_instance"):
+            with SingletonType._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super(SingletonType,cls).__call__(*args, **kwargs)
+        return cls._instance
