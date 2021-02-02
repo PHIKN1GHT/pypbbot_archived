@@ -59,3 +59,28 @@ class SingletonType(type):
                 if not hasattr(cls, "_instance"):
                     cls._instance = super(SingletonType,cls).__call__(*args, **kwargs)
         return cls._instance
+
+import os
+from pathlib import Path
+from uvicorn.supervisors import ChangeReload
+from pypbbot.log import logger
+class LoggableReload(ChangeReload):
+    def should_restart(self):
+        for filename in self.iter_py_files():
+            try:
+                mtime = os.path.getmtime(filename)
+            except OSError:  # pragma: nocover
+                continue
+
+            old_time = self.mtimes.get(filename)
+            if old_time is None:
+                self.mtimes[filename] = mtime
+                continue
+            elif mtime > old_time:
+                display_path = os.path.normpath(filename)
+                if Path.cwd() in Path(filename).parents:
+                    display_path = os.path.normpath(os.path.relpath(filename))
+                logger.warning("Detected file change in " + display_path + ". Reloading...")
+                return True
+        return False
+

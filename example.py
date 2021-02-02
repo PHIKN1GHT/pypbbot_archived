@@ -1,6 +1,9 @@
 from pypbbot import app, run_server, BaseDriver
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 from pypbbot.utils import Clips
+from pypbbot.log import logger
+import logging
+
 from typing import Union
 import asyncio
 
@@ -27,10 +30,12 @@ class SimpleDriver(BaseDriver):
             await self.sayHello(event)
 
     async def onPrivateMessage(self, event: PrivateMessageEvent):
+        logger.info('new private !')
+        print(logging.getLogger('uvicorn.error').handlers)
         if event.raw_message.startswith('#hello'):
             await self.sayHello(event)
 
 setattr(app, 'default_driver', SimpleDriver)
 
 if __name__ == '__main__':
-    run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
+    run_server(app='__main__:app', host='localhost', port=8082, reload=True)

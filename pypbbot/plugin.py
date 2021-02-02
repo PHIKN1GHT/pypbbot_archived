@@ -45,22 +45,7 @@ def _handle(affair: BaseAffair):
                 print(task._func, task._priority)
                 task._func(affair)
 
-'''
-def _register(affair_type: Type[BaseAffair], func: Callable[[BaseAffair], bool], priority: AffairPriority):
-    if not affair_type in _handlers.keys():
-        _handlers[affair_type] = PriorityQueue()
-    _handlers[affair_type].put(CallableHandler(func, priority))
-
-def _handle(affair: BaseAffair):
-    if type(affair) in _handlers.keys():
-        pqueue = _handlers[type(affair)]
-        while pqueue.qsize() > 0:
-            task = pqueue.get()
-            print(task._func, task._priority)
-            task._func(affair)'''
-
 import functools
-
 def onFilter(filter_func: Callable[[BaseAffair], bool], priority: AffairPriority = AffairPriority.NORMAL):
     def decorator(func: Callable[[BaseAffair], bool]):
         _register(filter_func, func, priority) # DO NOT USE LAMBDA EXPRESSION OR INNER FUNCTION
@@ -69,8 +54,6 @@ def onFilter(filter_func: Callable[[BaseAffair], bool], priority: AffairPriority
             return func(*args, **kw)
         return wrapper
     return decorator
-
-from functools import partial
 
 def all(_: BaseAffair) -> bool:
     return True
@@ -94,6 +77,6 @@ def load_plugins(*plugin_dir: str):
             module = module_finder.find_module(name)
         elif isinstance(module_finder, MetaPathFinder):
             module = module_finder.find_module(name, None) # SourceFileLoader
-
-        _loadedPlugins[name] = module.load_module(name)
+        if module is not None:
+            _loadedPlugins[name] = module.load_module(name)
     return _loadedPlugins
