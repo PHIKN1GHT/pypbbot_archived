@@ -1,16 +1,19 @@
 from pypbbot import app, PluginDriver, load_plugins, run_server
+from pypbbot.plugin import BaseAffair, _handle, _handlers
 
 setattr(app, 'default_driver', PluginDriver)
 if __name__ == '__main__':
     load_plugins('plugins')
+    print(_handlers)
     #run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
 
     #from pypbbot.plugin import BaseAffair, _handle, _handlers, load_plugins
-    '''aff = BaseAffair()
+    aff = BaseAffair()
     aff.msg = 'asd'
     print(123)
-    print(_handlers)
-    _handle(aff)'''
+    
+    _handle(aff)
+
 #    run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
 
 '''

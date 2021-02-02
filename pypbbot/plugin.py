@@ -4,7 +4,7 @@ from queue import PriorityQueue
 from enum import Enum
 
 class AffairPriority(Enum):
-    SYSTEM = 0 # Should not used by plugins
+    SYSTEM = 0 # SHOULD NOT USED BY PLUGINS
     VERY_HIGH = 1
     HIGH = 2
     NORMAL = 3
@@ -15,7 +15,6 @@ class AffairPriority(Enum):
         return self.value < other.value
 
 class BaseAffair:
-    msg = ''
     pass
 
 class CallableHandler():
@@ -29,30 +28,55 @@ class CallableHandler():
     def __lt__(self, other):
         return self._priority < other._priority
 
-_handlers: Dict[Type[BaseAffair], PriorityQueue] = {}
+_handlers: Dict[Callable[[BaseAffair], bool], PriorityQueue] = {}
 
+def _register(affair_filter: Callable[[BaseAffair], bool], func: Callable[[BaseAffair], bool], priority: AffairPriority):
+    if not affair_filter in _handlers.keys():
+        _handlers[affair_filter] = PriorityQueue()
+    _handlers[affair_filter].put(CallableHandler(func, priority))
+
+def _handle(affair: BaseAffair):
+    print('handling', _handlers.keys())
+    for affair_filter, pqueue in _handlers.items():
+        print(affair_filter(affair))
+        if affair_filter(affair):
+            while pqueue.qsize() > 0:
+                task = pqueue.get()
+                print(task._func, task._priority)
+                task._func(affair)
+
+'''
 def _register(affair_type: Type[BaseAffair], func: Callable[[BaseAffair], bool], priority: AffairPriority):
     if not affair_type in _handlers.keys():
         _handlers[affair_type] = PriorityQueue()
     _handlers[affair_type].put(CallableHandler(func, priority))
-        
+
 def _handle(affair: BaseAffair):
     if type(affair) in _handlers.keys():
         pqueue = _handlers[type(affair)]
         while pqueue.qsize() > 0:
             task = pqueue.get()
             print(task._func, task._priority)
-            task._func(affair)
+            task._func(affair)'''
 
 import functools
-def onLoad(priority: AffairPriority = AffairPriority.NORMAL):
+
+def onFilter(filter_func: Callable[[BaseAffair], bool], priority: AffairPriority = AffairPriority.NORMAL):
     def decorator(func: Callable[[BaseAffair], bool]):
-        _register(BaseAffair, func, priority)
+        _register(filter_func, func, priority) # DO NOT USE LAMBDA EXPRESSION OR INNER FUNCTION
         @functools.wraps(func)
         def wrapper(*args, **kw):
             return func(*args, **kw)
         return wrapper
     return decorator
+
+from functools import partial
+
+def all(_: BaseAffair) -> bool:
+    return True
+
+def onAll(priority: AffairPriority = AffairPriority.NORMAL):
+    return onFilter(all, priority)
 
 import pkgutil, os
 from pkgutil import ImpLoader
@@ -65,10 +89,11 @@ def load_plugins(*plugin_dir: str):
         if not os.path.exists(_dir):
             os.makedirs(_dir)
     for module_finder, name, _ in pkgutil.iter_modules(plugin_dir):
+        print('loading ', name)
         if isinstance(module_finder, PathEntryFinder): # Hack for Type Check
             module = module_finder.find_module(name)
         elif isinstance(module_finder, MetaPathFinder):
-            module = module_finder.find_module(name, None)
-        if isinstance(module, ImpLoader):
-            _loadedPlugins[name] = module.load_module(name)
+            module = module_finder.find_module(name, None) # SourceFileLoader
+
+        _loadedPlugins[name] = module.load_module(name)
     return _loadedPlugins
