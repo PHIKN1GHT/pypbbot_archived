@@ -10,6 +10,9 @@
 
 其次，按照如下方式编写代码文件 `echobot.py` ：
 
+## 类驱动模式
+
+
 ``` python
 from pypbbot import app, run_server, BaseDriver
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
@@ -28,6 +31,13 @@ app.driver_builder = SimpleDriver
 if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
 ```
+
+## 函数驱动模式
+
+## 事务驱动模式
+
+
+
 
 最后，启动协议客户端并运行 `python echobot.py` 。
 

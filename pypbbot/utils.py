@@ -113,3 +113,17 @@ class LazyLock():
             self._lock = Lock(loop = get_event_loop())
         return await self._lock
 
+import pypbbot
+from typing import Optional
+from pypbbot.protocol import SendPrivateMsgReq, PrivateMessageEvent, GroupMessageEvent, SendGroupMsgReq
+async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]):
+    clips = Clips() + clips
+    api_content: Optional[Union[SendPrivateMsgReq, SendGroupMsgReq]] = None
+    if isinstance(event, PrivateMessageEvent):
+        api_content = SendPrivateMsgReq()
+        api_content.user_id, auto_escape = event.user_id, True
+    elif isinstance(event, GroupMessageEvent):
+        api_content = SendGroupMsgReq()
+        api_content.group_id, auto_escape = event.group_id, True
+    api_content.message.extend(clips.toMessageList())
+    return await pypbbot.server.send_frame(event.self_id, api_content)

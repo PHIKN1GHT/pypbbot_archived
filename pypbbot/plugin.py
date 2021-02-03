@@ -27,9 +27,12 @@ async def _handle(affair: BaseAffair):
     logger.warning('in _handle')
     logger.warning(_handlers.items())
     for _, (affair_filter, pqueue) in _handlers.items():
-        logger.warning('Pass to: ', _)
-        for handler in pqueue.queue:
-            await handler._func(affair)
+        if affair_filter(affair):
+            logger.warning('Pass to: ', _)
+            for handler in pqueue.queue:
+                await handler._func(affair)
+                if affair.finished:
+                    break
 
 import functools
 def onFilter(filter_func: Callable[[BaseAffair], bool], priority: HandlerPriority = HandlerPriority.NORMAL):

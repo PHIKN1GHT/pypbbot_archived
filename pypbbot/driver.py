@@ -4,7 +4,7 @@ import os
 from pypbbot.protocol import *
 from pypbbot.typing import ProtobufBotEvent, ProtobufBotAPI
 from pypbbot import server
-from pypbbot.utils import Clips
+from pypbbot.utils import Clips, sendBackClipsTo
 from typing import Type, Dict, Callable, Awaitable, Optional, Union
 
 class BaseDriver:
@@ -30,10 +30,7 @@ class BaseDriver:
     
 
     async def sendBackClips(self, event: Union[PrivateMessageEvent, GroupMessageEvent], clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
-        if isinstance(event, PrivateMessageEvent):
-            return await self.sendPrivateClips(event.user_id, clips)
-        elif isinstance(event, GroupMessageEvent):
-            return await self.sendGroupClips(event.group_id, clips)
+        return await sendBackClipsTo(event, clips)
 
     async def onPrivateMessage(self, event: PrivateMessageEvent) -> Optional[bool]:
         pass
@@ -82,21 +79,28 @@ class BaseDriver:
 FunctionalDriver = Callable[[ProtobufBotEvent], Awaitable[None]]
 Drivable = Union[BaseDriver, FunctionalDriver]
 
-from pypbbot.typing import SingletonType
+from pypbbot.typing import SingletonType, LoadingEvent, UnloadingEvent
 from pypbbot.plugin import _handle as handleAffair
-from pypbbot.affairs import BaseAffair
+from pypbbot.affairs import BaseAffair, ChatAffair
 import pkgutil
 from pypbbot.logging import logger
 
+from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 class AffairDriver(BaseDriver, metaclass=SingletonType):
+    def __init__(self):
+        pass
+
     def __new__(cls, *args, **kwargs):
         return object.__new__(cls)
 
     async def handle(self, event: ProtobufBotEvent):
-        logger.warning('Handling')
-        affair = BaseAffair()
-        affair.driver = self
-        affair.event = event
+        if isinstance(event, PrivateMessageEvent):
+            affair = ChatAffair(self, event, event.user_id)
+        if isinstance(event, GroupMessageEvent):
+            affair = ChatAffair(self, event, event.Sender.user_id)
+        if type(event) == LoadingEvent or type(event) == UnloadingEvent:
+            affair = BaseAffair(self, event)
+        #logger.warning('Handling')
         await handleAffair(affair)
         #if type(event) in self._handler_registry.keys():
         #    await self._handler_registry[type(event)](event)
