@@ -15,10 +15,10 @@ async def _(affair: ChatAffair):
         await affair.send(Clips.from_image_url(akkarin_url) + '\n\阿卡林/\阿卡林/\阿卡林/')
         i += 1
 
-@onLoading()
+@onLoading() # 插件加载时触发
 async def _loading(affair: BaseAffair):
     logger.debug('Counter plugin has been enabled! ')
     
-@onUnloading()
+@onUnloading() # 插件卸载时触发
 async def _unloading(affair: BaseAffair):
     logger.debug('Counter plugin has been disabled! ')

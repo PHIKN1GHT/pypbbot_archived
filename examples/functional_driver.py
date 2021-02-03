@@ -17,7 +17,7 @@ async def sayHello(event):
             Clips.from_image_url(akkarin_url) + '\n\阿卡林/\阿卡林/\阿卡林/')
         i += 1
 
-async def functional_driver(botId: int) -> FunctionalDriver:
+async def functional_driver(botId: int) -> FunctionalDriver: # 函数驱动器（即一个返回处理函数的高阶函数）
     async def onMessage(event: Event) -> None:
         if isinstance(event, PrivateMessageEvent) or isinstance(event, GroupMessageEvent):
             global lock
