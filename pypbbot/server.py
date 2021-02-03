@@ -23,7 +23,7 @@ resp: Dict[str, Future] = {}
 @app.on_event("startup")
 async def init():
     if (hasattr(app, 'plugin_path')):
-        load_plugins(getattr(app, 'plugin_path'))
+        await load_plugins(getattr(app, 'plugin_path'))
     logger.info('Everything is almost ready. Hello, PyProtobufBot world!')
 
 @app.on_event("shutdown")
@@ -73,7 +73,15 @@ async def send_frame(driver: BaseDriver, api_content: ProtobufBotAPI) -> Protobu
     logger.debug('Send frame [{}] to client [{}]'.format(frame_type, frame.botId))
     await ws.send_bytes(data)
     resp[frame.echo] = asyncio.get_event_loop().create_future()
-    return await asyncio.wait_for(resp[frame.echo], 60)
+
+    try:
+        retv = await asyncio.wait_for(resp[frame.echo], 60)
+    except asyncio.TimeoutError:
+        logger.error('Timed out for frame [{}]'.format(frame.echo))
+        retv = None
+    finally:
+        resp.pop(frame.echo, None)
+    return retv
 
 def run_server(**kwargs): # type: ignore
     uvicorn.run(log_config = LOG_CONFIG, **kwargs)

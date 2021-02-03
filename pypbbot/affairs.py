@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import Optional
 from pypbbot.types import ProtobufBotEvent
+
 import pypbbot
+from pypbbot.driver import BaseDriver
 
 class HandlerPriority(Enum):
     SYSTEM = 0 # SHOULD NOT USED BY PLUGINS
@@ -15,12 +17,35 @@ class HandlerPriority(Enum):
         return self.value < other.value
 
 class BaseAffair:
+    #name: str = __name__
     event: Optional[ProtobufBotEvent]
+    driver: Optional[BaseDriver]
+    finished: bool
 
-def all(_: BaseAffair) -> bool:
-    return True
+class ChatAffair(BaseAffair):
+    pass
+    #def send(self, clips: Clips):
+    #    pass
 
-def onAll(priority: HandlerPriority = HandlerPriority.NORMAL):
-    return pypbbot.plugin.onFilter(all, priority)
+
+def unfilterable(priority: HandlerPriority = HandlerPriority.NORMAL):
+    def _unfilterable(_: BaseAffair) -> bool:
+        return True
+    return pypbbot.plugin.onFilter(_unfilterable, priority)
+
+def combined():
+    pass
+
+def onLoading():
+    pass
+
+def onUnloading():
+    pass
+
+def onPrivate():
+    pass
+
+def onGroup():
+    pass
 
 

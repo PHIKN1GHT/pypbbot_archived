@@ -65,4 +65,4 @@ export WS_URL=ws://localhost:8082/ws/test/
 - [ ] 撤销私聊
 - [x] 撤销群聊
 - [x] 插件化与事务处理
-- [ ] 日志
+- [x] 日志
