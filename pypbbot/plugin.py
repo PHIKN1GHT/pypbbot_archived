@@ -24,11 +24,10 @@ def _register(affair_filter: Callable[[BaseAffair], bool], func: Callable[[BaseA
     pqueue.put(CallableHandler(func, priority))
 
 async def _handle(affair: BaseAffair):
-    logger.warning('in _handle')
-    logger.warning(_handlers.items())
+    logger.warning('Handling [{}]'.format(affair))
     for _, (affair_filter, pqueue) in _handlers.items():
         if affair_filter(affair):
-            logger.warning('Pass to: ', _)
+            logger.Debug('Pass to [{}]'.format(_))
             for handler in pqueue.queue:
                 await handler._func(affair)
                 if affair.finished:

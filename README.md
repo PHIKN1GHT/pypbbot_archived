@@ -8,38 +8,25 @@
 
 首先，运行 `pip install --upgrade pypbbot` 以安装本项目或更新至最新版本。
 
-其次，按照如下方式编写代码文件 `echobot.py` ：
+其次，按照如下方式之一编写机器人程序后，通过调用 `python *_driver.py` 即可运行。（注意把 `*_driver.py` 替换成你的主程序文件的文件名）。
 
 ## 类驱动模式
 
-
-``` python
-from pypbbot import app, run_server, BaseDriver
-from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-
-class SimpleDriver(BaseDriver):
-    async def onPrivateMessage(self, event: PrivateMessageEvent):
-        if event.raw_message.startswith('#echo '):
-            await self.sendPrivateTextMessage(event.user_id, event.raw_message.replace('#echo ', ''))
-
-    async def onGroupMessage(self, event: GroupMessageEvent):
-        if event.raw_message.startswith('#echo '):
-            await self.sendGroupTextMessage(event.group_id, event.raw_message.replace('#echo ', ''))
-
-app.driver_builder = SimpleDriver
-
-if __name__ == '__main__':
-    run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
-```
+见程序源代码：[class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/class_driver.py)
 
 ## 函数驱动模式
 
+见程序源代码：[functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/functional_driver.py)
+
 ## 事务驱动模式
 
+见程序源代码：[plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugin_driver.py)和插件源代码：[plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugins/counter_plugin.py)（注意更改插件目录）
 
+# 注意事项
 
+## 异步中的同步问题
 
-最后，启动协议客户端并运行 `python echobot.py` 。
+本框架为异步框架，底层基于 `asyncio` 库实现。默认情况下，框架会为所有从客户端接收到的消息的处理过程**创建一个新的协程**，因而当涉及到某些语句乱序可能会导致不同步的问题时，需要对齐进行加同步锁处理。具体加锁方式见例程。
 
 # 设置协议客户端 
 
@@ -57,7 +44,6 @@ set WS_URL=ws://localhost:8082/ws/test/
 
 Linux下：
 
-
 ```bash
 export UIN=QQ号
 export PASSWORD=QQ密码
@@ -68,7 +54,7 @@ export WS_URL=ws://localhost:8082/ws/test/
 
 # 关于开发进度
 
-当前版本仅实现了`ProtobufBotAPI`的一个子集。稍后将继续加入更多功能。
+当前版本仅实现了 `ProtobufBotAPI` 的一个子集。稍后将继续加入更多功能。
 
 - [x] 接收/发送私聊
 - [x] 接收/发送群聊
@@ -77,4 +63,3 @@ export WS_URL=ws://localhost:8082/ws/test/
 - [x] 插件化与事务处理
 - [x] 日志
 
-# 异步中的同步问题

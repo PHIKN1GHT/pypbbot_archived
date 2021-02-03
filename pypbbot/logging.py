@@ -10,7 +10,6 @@ def _init_loggers():
 
 _init_loggers()
 
-
 # Copied From https://github.com/nsidnev/fastapi-realworld-example-app
 class LoguruHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:  # pragma: no cover

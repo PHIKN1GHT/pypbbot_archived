@@ -1,8 +1,5 @@
-import os, sys
+import os, sys, asyncio, uuid, inspect
 import uvicorn # type: ignore
-import asyncio
-import uuid
-import inspect
 
 from fastapi import FastAPI, WebSocket, BackgroundTasks
 from typing import Tuple, Dict, Callable, Awaitable, Union
@@ -34,7 +31,6 @@ async def close():
     logger.info('Shutting down. Have a nice day!')
     await AffairDriver().handle(UnloadingEvent())
     
-
 @app.websocket("/ws/test/")
 async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()

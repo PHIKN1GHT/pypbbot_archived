@@ -100,7 +100,4 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
             affair = ChatAffair(self, event, event.Sender.user_id)
         if type(event) == LoadingEvent or type(event) == UnloadingEvent:
             affair = BaseAffair(self, event)
-        #logger.warning('Handling')
         await handleAffair(affair)
-        #if type(event) in self._handler_registry.keys():
-        #    await self._handler_registry[type(event)](event)

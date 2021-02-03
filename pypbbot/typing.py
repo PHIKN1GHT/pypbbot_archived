@@ -23,11 +23,10 @@ class SingletonType(type):
                     cls._instance = super(SingletonType,cls).__call__(*args, **kwargs)
         return cls._instance
 
-
-class LoadingEvent:
+class LoadingEvent: # To be finishd
     pass
 
-class UnloadingEvent:
+class UnloadingEvent: # To be finishd
     pass
 
 ProtobufBotEvent = Union[onebot_event_pb2.PrivateMessageEvent, onebot_event_pb2.GroupMessageEvent, onebot_event_pb2.GroupUploadNoticeEvent, onebot_event_pb2.GroupAdminNoticeEvent, onebot_event_pb2.GroupDecreaseNoticeEvent, onebot_event_pb2.GroupIncreaseNoticeEvent, onebot_event_pb2.GroupBanNoticeEvent, onebot_event_pb2.FriendAddNoticeEvent, onebot_event_pb2.GroupRecallNoticeEvent, onebot_event_pb2.FriendRecallNoticeEvent, onebot_event_pb2.FriendRequestEvent, onebot_event_pb2.GroupRequestEvent, LoadingEvent, UnloadingEvent]
