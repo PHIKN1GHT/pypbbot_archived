@@ -35,7 +35,7 @@ LOG_CONFIG = {
     "disable_existing_loggers": False,
     "handlers": {
         "default": {
-            "class": "pypbbot.log.LoguruHandler",
+            "class": "pypbbot.logging.LoguruHandler",
         },
     },
     "loggers": {

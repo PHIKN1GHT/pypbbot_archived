@@ -64,24 +64,26 @@ class BaseDriver:
         clips = Clips() + clips
         api_content = SendPrivateMsgReq()
         api_content.user_id, auto_escape = user_id, True
-        for datum in clips._data:
+        api_content.message.extend(clips.toMessageList())
+        '''for datum in clips._data:
             textmsg = Message()
             textmsg.type = datum[0]
             for item in datum[1].keys():
                 textmsg.data[item] = datum[1][item]
-            api_content.message.append(textmsg)
+            api_content.message.append(textmsg)'''
         return await server.send_frame(self.botId, api_content)
 
     async def sendGroupClips(self, group_id: int, clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
         clips = Clips() + clips
         api_content = SendGroupMsgReq()
         api_content.group_id, auto_escape = group_id, True
-        for datum in clips._data:
+        api_content.message.extend(clips.toMessageList())
+        '''for datum in clips._data:
             textmsg = Message()
             textmsg.type = datum[0]
             for item in datum[1].keys():
-                textmsg.data[item] = datum[1][item]
-            api_content.message.append(textmsg)
+                textmsg.data[item] = datum[1][item]'''
+            
         return await server.send_frame(self.botId, api_content)
 
     async def recallMessage(self, message_id: int) -> ProtobufBotAPI:
