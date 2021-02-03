@@ -62,27 +62,39 @@ class Clips():
 
 
 from collections import OrderedDict
-from typing import Optional
+from typing import Optional, TypeVar, Generic, Mapping, Set
 from asyncio import Future
-# str, Future
 
-class LRUResponseCache:
+from typing import Generic, TypeVar, Mapping, Iterator, Dict
+
+KT = TypeVar('KT')
+VT = TypeVar('VT')
+class LRULimitedDict(Mapping[KT, VT]):
     def __init__(self, capacity: int = 65536):
-        self.cache: OrderedDict[str, Future] = OrderedDict()
+        self.cache: OrderedDict[KT, VT] = OrderedDict()
         self.capacity = capacity
 
-    def get(self, key: str) -> Future:
+    def pop(self, key: KT) -> VT:
+        return self.cache.pop(key)
+    
+    def remove(self, key: KT):
+        self.cache.pop(key)
+
+    def __iter__(self):
+        return self.cache.__iter__()
+
+    def __len__(self):
+        return self.cache.__len__()
+
+    def __getitem__(self, key: KT) -> VT:
         self.cache.move_to_end(key)
         return self.cache[key]
 
-    def put(self, key: str, value: Future) -> None:
+    def __setitem__(self, key: KT, value: VT):
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.capacity:
             self.cache.popitem(last = False)
 
-    def hasKey(self, key: str) -> bool:
-        return key in self.cache.keys()
-
-    def remove(self, key: str) -> None:
-        self.cache.pop(key)
+    def keys(self):
+        return self.cache.keys()

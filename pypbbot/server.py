@@ -8,16 +8,15 @@ from typing import Tuple, Dict
 from asyncio import Future
 
 from pypbbot.driver import BaseDriver
-from pypbbot.utils import in_lower_case, LRUResponseCache
+from pypbbot.utils import in_lower_case, LRULimitedDict
 from pypbbot.typing import ProtobufBotAPI, ProtobufBotFrame as Frame, ProtobufBotMessage as Message
 from pypbbot.logging import logger, LOG_CONFIG
 from pypbbot.plugin import load_plugins
 
 app = FastAPI()
 
-drivers: Dict[int, Tuple[WebSocket, BaseDriver]] = {}
-#resp: Dict[str, Future] = {}
-resp_cache = LRUResponseCache()
+drivers: LRULimitedDict[int, Tuple[WebSocket, BaseDriver]] = LRULimitedDict()
+resp_cache: LRULimitedDict[str, Future] = LRULimitedDict()
 
 @app.on_event("startup")
 async def init():
@@ -55,11 +54,11 @@ async def recv_frame(frame: Frame, botId: int) -> None:
     if frame_type.endswith('Event'):
         await driver.handle(getattr(frame, frame.WhichOneof('data')))
     else:
-        if resp_cache.hasKey(frame.echo):
+        if frame.echo in resp_cache.keys():
             if isinstance(frame.WhichOneof('data'), str):
-                resp_cache.get(frame.echo).set_result(getattr(frame, frame.WhichOneof('data')))
+                resp_cache[frame.echo].set_result(getattr(frame, frame.WhichOneof('data')))
             else:
-                resp_cache.get(frame.echo).set_result(None)
+                resp_cache[frame.echo].set_result(None)
 
 async def send_frame(botId: int, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
     frame = Frame()
@@ -71,10 +70,10 @@ async def send_frame(botId: int, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
     frame_type = Frame.FrameType.Name(frame.frame_type)
     logger.debug('Send frame [{}] to client [{}]'.format(frame_type, frame.botId))
     await ws.send_bytes(data)
-    resp_cache.put(frame.echo, asyncio.get_event_loop().create_future())
+    resp_cache[frame.echo] = asyncio.get_event_loop().create_future()
 
     try:
-        retv = await asyncio.wait_for(resp_cache.get(frame.echo), 60)
+        retv = await asyncio.wait_for(resp_cache[frame.echo], 60)
     except asyncio.TimeoutError:
         logger.error('Timed out for frame [{}]'.format(frame.echo))
         retv = None
