@@ -1,5 +1,5 @@
 from typing import List, Tuple, Dict, TypeVar, Union, Type
-from pypbbot.types import ProtobufBotMessage
+from pypbbot.typing import ProtobufBotMessage
 import copy
 
 def in_lower_case(text: str) -> str:

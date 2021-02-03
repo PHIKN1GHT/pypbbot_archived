@@ -9,10 +9,8 @@ from asyncio import Future
 
 from pypbbot.driver import BaseDriver
 from pypbbot.utils import in_lower_case
-from pypbbot.types import ProtobufBotAPI
-from pypbbot.types import ProtobufBotFrame as Frame
-from pypbbot.types import ProtobufBotMessage as Message
-from pypbbot.log import logger, LOG_CONFIG
+from pypbbot.typing import ProtobufBotAPI, ProtobufBotFrame as Frame, ProtobufBotMessage as Message
+from pypbbot.logging import logger, LOG_CONFIG
 from pypbbot.plugin import load_plugins
 
 app = FastAPI()
@@ -46,13 +44,13 @@ async def handle_websocket(websocket: WebSocket) -> None:
         else:
             _, dri = drivers[frame.botId]
             drivers[frame.botId] = (websocket, dri)
+        
+        asyncio.create_task(recv_frame(frame, frame.botId))
 
-        ws, driver = drivers[frame.botId]
-        asyncio.create_task(recv_frame(frame, driver))
-
-async def recv_frame(frame: Frame, driver: BaseDriver) -> None:
+async def recv_frame(frame: Frame, botId: int) -> None:
     frame_type = Frame.FrameType.Name(frame.frame_type)
     logger.debug('Recv frame [{}] from client [{}]'.format(frame_type, frame.botId))
+    _, driver = drivers[frame.botId]
     if frame_type.endswith('Event'):
         await driver.handle(getattr(frame, frame.WhichOneof('data')))
     else:
@@ -62,10 +60,10 @@ async def recv_frame(frame: Frame, driver: BaseDriver) -> None:
             else:
                 resp[frame.echo].set_result(None)
 
-async def send_frame(driver: BaseDriver, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
+async def send_frame(botId: int, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
     frame = Frame()
-    ws, _ = drivers[driver.botId]
-    frame.botId, frame.echo, frame.ok = driver.botId, str(uuid.uuid1()), True
+    ws, _ = drivers[botId]
+    frame.botId, frame.echo, frame.ok = botId, str(uuid.uuid1()), True
     frame.frame_type = getattr(Frame.FrameType, 'T' + type(api_content).__name__)
     getattr(frame, in_lower_case(type(api_content).__name__)).CopyFrom(api_content)
     data = frame.SerializeToString()

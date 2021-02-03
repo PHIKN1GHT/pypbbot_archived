@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional
-from pypbbot.types import ProtobufBotEvent
+from pypbbot.typing import ProtobufBotEvent
 
 import pypbbot
 from pypbbot.driver import BaseDriver

@@ -33,7 +33,8 @@ class SimpleDriver(BaseDriver):
         if event.raw_message.startswith('#hello'):
             await self.sayHello(event)
 
-setattr(app, 'default_driver', SimpleDriver)
+from pypbbot.driver import AffairDriver
+setattr(app, 'default_driver', AffairDriver)
 
 if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True)

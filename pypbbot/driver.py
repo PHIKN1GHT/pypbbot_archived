@@ -2,7 +2,7 @@ from functools import partial
 import os
 
 from pypbbot.protocol import *
-from pypbbot.types import ProtobufBotEvent, ProtobufBotAPI
+from pypbbot.typing import ProtobufBotEvent, ProtobufBotAPI
 from pypbbot import server
 from pypbbot.utils import Clips
 from typing import Type, Dict, Callable, Awaitable, Optional, Union
@@ -70,7 +70,7 @@ class BaseDriver:
             for item in datum[1].keys():
                 textmsg.data[item] = datum[1][item]
             api_content.message.append(textmsg)
-        return await server.send_frame(self, api_content)
+        return await server.send_frame(self.botId, api_content)
 
     async def sendGroupClips(self, group_id: int, clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
         clips = Clips() + clips
@@ -82,20 +82,20 @@ class BaseDriver:
             for item in datum[1].keys():
                 textmsg.data[item] = datum[1][item]
             api_content.message.append(textmsg)
-        return await server.send_frame(self, api_content)
+        return await server.send_frame(self.botId, api_content)
 
     async def recallMessage(self, message_id: int) -> ProtobufBotAPI:
         api_content = DeleteMsgReq()
         api_content.message_id = message_id
-        return await server.send_frame(self, api_content)
+        return await server.send_frame(self.botId, api_content)
 
-from pypbbot.types import SingletonType
+from pypbbot.typing import SingletonType
 from pypbbot.plugin import _handle as handleAffair
 from pypbbot.affairs import BaseAffair
 import pkgutil
-from pypbbot.log import logger
+from pypbbot.logging import logger
 
-class PluginDriver(BaseDriver, metaclass=SingletonType):
+class AffairDriver(BaseDriver, metaclass=SingletonType):
     def __new__(cls, *args, **kwargs):
         return object.__new__(cls)
 

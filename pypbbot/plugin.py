@@ -1,6 +1,6 @@
 from typing import Callable, Type, Dict, Tuple
 from queue import PriorityQueue
-from pypbbot.log import logger
+from pypbbot.logging import logger
 from pypbbot.affairs import BaseAffair, HandlerPriority
 
 class CallableHandler():
