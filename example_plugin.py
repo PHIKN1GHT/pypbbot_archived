@@ -2,7 +2,7 @@ from pypbbot import app, AffairDriver, load_plugins, run_server
 from pypbbot.plugin import _handle, _handlers
 from pypbbot.affairs import BaseAffair
 
-setattr(app, 'default_driver', AffairDriver)
+setattr(app, 'driver_builder', AffairDriver)
 setattr(app, 'plugin_path', 'plugins')
 if __name__ == '__main__':
     #load_plugins()
@@ -47,5 +47,5 @@ class SimpleDriver(BaseDriver):
         if event.raw_message.startswith('#hello'):
             await self.sayHello(event)
 
-setattr(app, 'default_driver', SimpleDriver)
+setattr(app, 'driver_builder', SimpleDriver)
 '''

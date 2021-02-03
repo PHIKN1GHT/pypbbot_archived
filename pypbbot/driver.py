@@ -79,6 +79,9 @@ class BaseDriver:
         api_content.message_id = message_id
         return await server.send_frame(self.botId, api_content)
 
+FunctionalDriver = Callable[[ProtobufBotEvent], Awaitable[None]]
+Drivable = Union[BaseDriver, FunctionalDriver]
+
 from pypbbot.typing import SingletonType
 from pypbbot.plugin import _handle as handleAffair
 from pypbbot.affairs import BaseAffair

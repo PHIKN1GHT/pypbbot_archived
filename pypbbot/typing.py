@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Callable, Awaitable
 from pypbbot.protocol import onebot_api_pb2, onebot_event_pb2, onebot_frame_pb2, onebot_base_pb2
 
 # ProtobufBotAPI = Union[tuple([getattr(onebot_api_pb2, attr) for attr in onebot_api_pb2.__dir__() if attr.endswith('Req') or attr.endswith('Resp')])]

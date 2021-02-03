@@ -23,7 +23,7 @@ class SimpleDriver(BaseDriver):
         if event.raw_message.startswith('#echo '):
             await self.sendGroupTextMessage(event.group_id, event.raw_message.replace('#echo ', ''))
 
-app.default_driver = SimpleDriver
+app.driver_builder = SimpleDriver
 
 if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)
@@ -66,3 +66,5 @@ export WS_URL=ws://localhost:8082/ws/test/
 - [x] 撤销群聊
 - [x] 插件化与事务处理
 - [x] 日志
+
+# 异步中的同步问题

@@ -23,7 +23,7 @@ class SimpleDriver(BaseDriver):
         if event.raw_message.startswith('#echo '):
             await self.sendGroupTextMessage(event.group_id, event.raw_message.replace('#echo ', ''))
 
-app.default_driver = SimpleDriver
+app.driver_builder = SimpleDriver
 
 if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True, debug=True)

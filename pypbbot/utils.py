@@ -98,3 +98,18 @@ class LRULimitedDict(Mapping[KT, VT]):
 
     def keys(self):
         return self.cache.keys()
+
+from asyncio import Lock, get_event_loop
+
+'''
+    Locking something in a async function.
+'''
+class LazyLock():
+    def __init__(self):
+        self._lock = None
+
+    async def try_lock(self):
+        if not self._lock:
+            self._lock = Lock(loop = get_event_loop())
+        return await self._lock
+
