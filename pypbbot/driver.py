@@ -94,10 +94,11 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
         return object.__new__(cls)
 
     async def handle(self, event: ProtobufBotEvent):
+        affair :BaseAffair
         if isinstance(event, PrivateMessageEvent):
             affair = ChatAffair(self, event, event.user_id)
-        if isinstance(event, GroupMessageEvent):
+        elif isinstance(event, GroupMessageEvent):
             affair = ChatAffair(self, event, event.Sender.user_id)
-        if type(event) == LoadingEvent or type(event) == UnloadingEvent:
+        else:
             affair = BaseAffair(self, event)
         await handleAffair(affair)

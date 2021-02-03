@@ -27,7 +27,7 @@ async def _handle(affair: BaseAffair):
     logger.warning('Handling [{}]'.format(affair))
     for _, (affair_filter, pqueue) in _handlers.items():
         if affair_filter(affair):
-            logger.Debug('Pass to [{}]'.format(_))
+            logger.debug('Pass to [{}]'.format(_))
             for handler in pqueue.queue:
                 await handler._func(affair)
                 if affair.finished:

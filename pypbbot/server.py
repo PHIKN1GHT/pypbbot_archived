@@ -61,8 +61,8 @@ async def recv_frame(frame: Frame, botId: int) -> None:
     _, driver = drivers[frame.botId]
     if frame_type.endswith('Event'):
         event = getattr(frame, frame.WhichOneof('data'))
-        if isinstance(event, PrivateMessageEvent):
-            print(event.raw_message)
+        #if isinstance(event, PrivateMessageEvent):
+        #    print(event.raw_message)
         if isinstance(driver, BaseDriver):
             #await driver.handle(event)
             asyncio.create_task(driver.handle(event))
