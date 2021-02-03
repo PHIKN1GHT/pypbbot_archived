@@ -12,15 +12,15 @@
 
 ## 类驱动模式
 
-见程序源代码：[class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/class_driver.py)
+见样例程序源代码： [class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/class_driver.py)
 
 ## 函数驱动模式
 
-见程序源代码：[functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/functional_driver.py)
+见样例程序源代码： [functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/functional_driver.py)
 
 ## 事务驱动模式
 
-见程序源代码：[plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugin_driver.py)和插件源代码：[plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugins/counter_plugin.py)（注意更改插件目录）
+见样例程序源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugin_driver.py) 和样例插件源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugins/counter_plugin.py) （注意更改插件目录）
 
 # 注意事项
 
