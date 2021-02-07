@@ -34,6 +34,8 @@ class ChatAffair(BaseAffair):
     async def send(self, clips: Union[Clips, str, int, float]):
         await sendBackClipsTo(self.event, clips)
 
+
+
 def unfilterable(priority: HandlerPriority = HandlerPriority.NORMAL):
     def _unfilterable_filter(_: BaseAffair) -> bool:
         return True
