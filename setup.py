@@ -1,11 +1,12 @@
 import setuptools
+import pypbbot
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="pypbbot",
-    version="0.1b2",
+    version=pypbbot.__version__,
     author="Kale1d0",
     author_email="kale1d0@qq.com",
     description="Python implementation for ProtobufBot Server.",
@@ -18,5 +19,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )
