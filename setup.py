@@ -20,4 +20,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.7',
+    install_requires=[
+        "uvicorn>=0.13.3",
+        "loguru>=0.5.3",
+        "fastapi>=0.63.0",
+        "protobuf>=3.14.0"
+    ]
 )
