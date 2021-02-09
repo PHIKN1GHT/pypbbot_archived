@@ -3,12 +3,13 @@ from pypbbot.driver import FunctionalDriver
 from pypbbot.typing import ProtobufBotEvent as Event
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 from pypbbot.utils import Clips, LazyLock, sendBackClipsTo
+from typing import Union
 import asyncio
 
 i, lock = 0, LazyLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
-async def sayHello(event):
+async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
     if event.raw_message.startswith('#hello'):
         global i
         await sendBackClipsTo(event, 'Hello, world! x {}'.format(i))

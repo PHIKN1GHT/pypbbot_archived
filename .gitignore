@@ -1,5 +1,6 @@
 # Protobuf
 onebot_idl
+example.py
 *.ipynb
 
 # Byte-compiled / optimized / DLL files
