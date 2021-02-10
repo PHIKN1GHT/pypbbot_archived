@@ -12,6 +12,8 @@ from pypbbot.logging import logger, LOG_CONFIG
 from pypbbot.plugin import load_plugins
 from pypbbot.protocol import SendPrivateMsgReq, PrivateMessageEvent, GroupMessageEvent, SendGroupMsgReq
 
+from starlette.websockets import WebSocketDisconnect
+
 app = FastAPI()
 
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
@@ -36,23 +38,27 @@ async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
     logger.info('Accepted client from {}:{}'.format(websocket.client.host, websocket.client.port))
     while True:
-        rawdata: bytes = await websocket.receive_bytes()
-        frame = Frame()
-        frame.ParseFromString(rawdata)
+        try:
+            rawdata: bytes = await websocket.receive_bytes()
+            frame = Frame()
+            frame.ParseFromString(rawdata)
 
-        if not frame.botId in drivers.keys():
-            if not hasattr(app, 'driver_builder'):
-                setattr(app, 'driver_builder', BaseDriver)
-            driver_builder = getattr(app, 'driver_builder')
+            if not frame.botId in drivers.keys():
+                if not hasattr(app, 'driver_builder'):
+                    setattr(app, 'driver_builder', BaseDriver)
+                driver_builder = getattr(app, 'driver_builder')
 
-            if inspect.isclass(driver_builder):
-                drivers[frame.botId] = (websocket, driver_builder(frame.botId))
+                if inspect.isclass(driver_builder):
+                    drivers[frame.botId] = (websocket, driver_builder(frame.botId))
+                else:
+                    drivers[frame.botId] = (websocket, await driver_builder(frame.botId))
             else:
-                drivers[frame.botId] = (websocket, await driver_builder(frame.botId))
-        else:
-            _, dri = drivers[frame.botId]
-            drivers[frame.botId] = (websocket, dri)
-        await recv_frame(frame, frame.botId)
+                _, dri = drivers[frame.botId]
+                drivers[frame.botId] = (websocket, dri)
+            await recv_frame(frame, frame.botId)
+        except WebSocketDisconnect:
+            logger.warning('Connection to {} has been closed.'.format(websocket.client.host))
+            break
         #asyncio.create_task(recv_frame(frame, frame.botId))
 
 async def recv_frame(frame: Frame, botId: int) -> None:
