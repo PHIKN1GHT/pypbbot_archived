@@ -29,7 +29,8 @@ class BaseDriver:
             await self._handler_registry[type(event)](event)
     
 
-    async def sendBackClips(self, event: Union[PrivateMessageEvent, GroupMessageEvent], clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
+    async def sendBackClips(self, event: Union[PrivateMessageEvent, GroupMessageEvent], 
+                            clips: Union[Clips, str, int, float]) -> ProtobufBotAPI:
         return await sendBackClipsTo(event, clips)
 
     async def onPrivateMessage(self, event: PrivateMessageEvent) -> Optional[bool]:
@@ -86,6 +87,7 @@ import pkgutil
 from pypbbot.logging import logger
 
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
+
 class AffairDriver(BaseDriver, metaclass=SingletonType):
     def __init__(self):
         pass

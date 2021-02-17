@@ -21,6 +21,8 @@ resp_cache: LRULimitedDict[str, Future] = LRULimitedDict()
 
 @app.on_event("startup")
 async def init():
+    """Init all the plugins after preload.
+    """
     global loop
     loop = asyncio.get_running_loop()
     if (hasattr(app, 'plugin_path')):
@@ -62,6 +64,15 @@ async def handle_websocket(websocket: WebSocket) -> None:
         #asyncio.create_task(recv_frame(frame, frame.botId))
 
 async def recv_frame(frame: Frame, botId: int) -> None:
+    """Unpack frame from client.
+
+    Args:
+      frame: received from 
+      botId: 
+
+    Returns:
+      None.
+    """
     frame_type = Frame.FrameType.Name(frame.frame_type)
     logger.debug('Recv frame [{}] from client [{}]'.format(frame_type, frame.botId))
     _, driver = drivers[frame.botId]
