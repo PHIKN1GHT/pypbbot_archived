@@ -2,11 +2,11 @@ from pypbbot import app, run_server
 from pypbbot.driver import FunctionalDriver
 from pypbbot.typing import ProtobufBotEvent as Event
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-from pypbbot.utils import Clips, LazyLock, sendBackClipsTo
+from pypbbot.utils import Clips, AsyncLock, sendBackClipsTo
 from typing import Union
 import asyncio
 
-i, lock = 0, LazyLock()
+i, lock = 0, AsyncLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
 async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
@@ -22,7 +22,7 @@ async def functional_driver(botId: int) -> FunctionalDriver: # 函数驱动器�
     async def onMessage(event: Event) -> None:
         if isinstance(event, PrivateMessageEvent) or isinstance(event, GroupMessageEvent):
             global lock
-            with await lock.try_lock():
+            with await lock.lock():
                 await sayHello(event)
 
     return onMessage

@@ -17,6 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
 project = 'PyProtobufBot'
 copyright = '2021, Kale1d0'
 author = 'Kale1d0'

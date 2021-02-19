@@ -1,10 +1,10 @@
 from pypbbot import app, run_server, BaseDriver
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-from pypbbot.utils import Clips, LazyLock, sendBackClipsTo
+from pypbbot.utils import Clips, AsyncLock, sendBackClipsTo
 from typing import Union
 import asyncio
 
-i, lock = 0, LazyLock()
+i, lock = 0, AsyncLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
 async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
@@ -19,12 +19,12 @@ async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
 class SimpleDriver(BaseDriver): # 驱动类
     async def onGroupMessage(self, event: GroupMessageEvent): # 监听的事件类型
         if event.raw_message.startswith('#hello'):
-            with await lock.try_lock(): # 加异步锁
+            with await lock.lock(): # 加异步锁
                 await sayHello(event)
 
     async def onPrivateMessage(self, event: PrivateMessageEvent):
         if event.raw_message.startswith('#hello'):
-            with await lock.try_lock():
+            with await lock.lock():
                 await sayHello(event)
 
 setattr(app, 'driver_builder', SimpleDriver) # 注册驱动器

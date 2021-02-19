@@ -1,16 +1,25 @@
-import os, sys, asyncio, uuid, inspect
+from __future__ import annotations
+
+import typing
+if typing.TYPE_CHECKING:
+    from asyncio import Future
+    from typing import Tuple, Dict, Callable, Awaitable, Union
+    from pypbbot.driver import BaseDriver, AffairDriver, Drivable
+    from pypbbot.typing import ProtobufBotAPI
+
+import os
+import sys
+import asyncio
+import uuid
+import inspect
 import uvicorn # type: ignore
-
-from fastapi import FastAPI, WebSocket, BackgroundTasks
-from typing import Tuple, Dict, Callable, Awaitable, Union
-from asyncio import Future
-
-from pypbbot.driver import BaseDriver, AffairDriver, Drivable
-from pypbbot.utils import in_lower_case, LRULimitedDict, Clips
-from pypbbot.typing import ProtobufBotAPI, ProtobufBotFrame as Frame, ProtobufBotMessage as Message, ProtobufBotEvent as Event, LoadingEvent, UnloadingEvent
+from fastapi import FastAPI, WebSocket
+from pypbbot.driver import AffairDriver
+from pypbbot.utils import in_lower_case, LRULimitedDict
+from pypbbot.typing import ProtobufBotFrame as Frame, LoadingEvent, UnloadingEvent
 from pypbbot.logging import logger, LOG_CONFIG
 from pypbbot.plugin import load_plugins
-from pypbbot.protocol import SendPrivateMsgReq, PrivateMessageEvent, GroupMessageEvent, SendGroupMsgReq
+from pypbbot.protocol import SendGroupMsgReq
 
 from starlette.websockets import WebSocketDisconnect
 

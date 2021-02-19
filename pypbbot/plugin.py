@@ -1,10 +1,18 @@
-from typing import Callable, Type, Dict, Tuple
+from __future__ import annotations
+
+import typing
+if typing.TYPE_CHECKING:
+    from pypbbot.affairs import BaseAffair, HandlerPriority
+    from typing import Callable, Type, Dict, Tuple
+    from pypbbot.typing import Handler, Filter
+
 from queue import PriorityQueue
 from pypbbot.logging import logger
-from pypbbot.affairs import BaseAffair, HandlerPriority
+import typing
+
 
 class CallableHandler():
-    def __init__(self, func: Callable[[BaseAffair], bool], priority):
+    def __init__(self, func: Handler, priority):
         self._func = func
         self._priority = priority
         
@@ -14,13 +22,13 @@ class CallableHandler():
     def __lt__(self, other):
         return self._priority < other._priority
 
-_handlers: Dict[str, Tuple[Callable[[BaseAffair], bool], PriorityQueue]] = {}
+_handlers: Dict[str, Tuple[Filter, PriorityQueue]] = {}
 
-def _register(affair_filter: Callable[[BaseAffair], bool], func: Callable[[BaseAffair], bool], priority: HandlerPriority):
+def _register(name: str, affair_filter: Filter, func: Handler, priority: HandlerPriority) -> None:
     logger.debug('Registering handler [{}] for filter [{}] ...'.format(func.__name__, affair_filter.__name__))
-    if not affair_filter.__name__ in _handlers.keys():
-        _handlers[affair_filter.__name__] = (affair_filter, PriorityQueue())
-    _, pqueue = _handlers[affair_filter.__name__]
+    if not name in _handlers.keys():
+        _handlers[name] = (affair_filter, PriorityQueue())
+    _, pqueue = _handlers[name]
     pqueue.put(CallableHandler(func, priority))
 
 async def _handle(affair: BaseAffair):
@@ -30,18 +38,7 @@ async def _handle(affair: BaseAffair):
             logger.debug('Pass to [{}]'.format(_))
             for handler in pqueue.queue:
                 await handler._func(affair)
-                if affair.finished:
-                    break
 
-import functools
-def onFilter(filter_func: Callable[[BaseAffair], bool], priority: HandlerPriority = HandlerPriority.NORMAL):
-    def decorator(func: Callable[[BaseAffair], bool]):
-        _register(filter_func, func, priority) # DO NOT USE LAMBDA EXPRESSION
-        @functools.wraps(func)
-        def wrapper(*args, **kw):
-            return func(*args, **kw)
-        return wrapper
-    return decorator
 
 import pkgutil, os
 from pkgutil import ImpLoader

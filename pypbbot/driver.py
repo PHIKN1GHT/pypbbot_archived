@@ -1,11 +1,19 @@
-from functools import partial
-import os
+from __future__ import annotations
 
+import typing
+if typing.TYPE_CHECKING:
+    from typing import Type, Dict, Optional
+    from pypbbot.typing import ProtobufBotAPI
+
+import os
+from typing import Callable, Awaitable, Union
 from pypbbot.protocol import *
-from pypbbot.typing import ProtobufBotEvent, ProtobufBotAPI
 from pypbbot import server
-from pypbbot.utils import Clips, sendBackClipsTo
-from typing import Type, Dict, Callable, Awaitable, Optional, Union
+from pypbbot.utils import Clips, sendBackClipsTo, SingletonType
+from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
+from pypbbot.logging import logger
+from pypbbot.plugin import _handle as handleAffair
+from pypbbot.typing import ProtobufBotEvent
 
 class BaseDriver:
     def __init__(self, botId: int):
@@ -77,17 +85,6 @@ class BaseDriver:
         api_content.message_id = message_id
         return await server.send_frame(self.botId, api_content)
 
-FunctionalDriver = Callable[[ProtobufBotEvent], Awaitable[None]]
-Drivable = Union[BaseDriver, FunctionalDriver]
-
-from pypbbot.typing import SingletonType, LoadingEvent, UnloadingEvent
-from pypbbot.plugin import _handle as handleAffair
-from pypbbot.affairs import BaseAffair, ChatAffair
-import pkgutil
-from pypbbot.logging import logger
-
-from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-
 class AffairDriver(BaseDriver, metaclass=SingletonType):
     def __init__(self):
         pass
@@ -96,6 +93,7 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
         return object.__new__(cls)
 
     async def handle(self, event: ProtobufBotEvent):
+        from pypbbot.affairs import BaseAffair, ChatAffair
         affair :BaseAffair
         if isinstance(event, PrivateMessageEvent):
             affair = ChatAffair(self, event, event.user_id)
@@ -104,3 +102,6 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
         else:
             affair = BaseAffair(self, event)
         await handleAffair(affair)
+
+FunctionalDriver = Callable[[ProtobufBotEvent], Awaitable[None]]
+Drivable = Union[BaseDriver, FunctionalDriver]

@@ -26,6 +26,7 @@ setuptools.setup(
         "uvicorn>=0.13.3",
         "loguru>=0.5.3",
         "fastapi>=0.63.0",
-        "protobuf>=3.14.0"
+        "protobuf>=3.14.0",
+        'returns>=0.15.0'
     ]
 )
