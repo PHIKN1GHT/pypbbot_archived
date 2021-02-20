@@ -12,14 +12,14 @@ import typing
 
 
 class CallableHandler():
-    def __init__(self, func: Handler, priority):
+    def __init__(self, func: Handler, priority) -> None:
         self._func = func
         self._priority = priority
         
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self._priority == other._priority
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self._priority < other._priority
 
 _handlers: Dict[str, Tuple[Filter, PriorityQueue]] = {}
@@ -31,7 +31,7 @@ def _register(name: str, affair_filter: Filter, func: Handler, priority: Handler
     _, pqueue = _handlers[name]
     pqueue.put(CallableHandler(func, priority))
 
-async def _handle(affair: BaseAffair):
+async def _handle(affair: BaseAffair) -> None:
     logger.warning('Handling [{}]'.format(affair))
     for _, (affair_filter, pqueue) in _handlers.items():
         if affair_filter(affair):
@@ -46,7 +46,7 @@ from importlib.abc import PathEntryFinder, MetaPathFinder
 from types import ModuleType
 
 _loadedPlugins: Dict[str, ModuleType] = {}
-async def load_plugins(*plugin_dir: str):
+async def load_plugins(*plugin_dir: str) -> Dict[str, ModuleType]:
     for _dir in plugin_dir:
         if not os.path.exists(_dir):
             os.makedirs(_dir)

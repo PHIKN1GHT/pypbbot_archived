@@ -6,11 +6,13 @@ if typing.TYPE_CHECKING:
     from pypbbot.driver import AffairDriver
     from pypbbot.typing import Event
     from pypbbot.utils import Clips
-    from pypbbot.typing import GroupMessageEvent, PrivateMessageEvent
+    from pypbbot.protocol import GroupMessageEvent, PrivateMessageEvent
 
 from enum import Enum
 from pypbbot.logging import logger
 from pypbbot.utils import sendBackClipsTo
+
+__all__ = ['HandlerPriority', 'BaseAffair', 'ChatAffair']
 
 class HandlerPriority(Enum):
     SYSTEM = 0 # SHOULD NOT USED BY PLUGINS

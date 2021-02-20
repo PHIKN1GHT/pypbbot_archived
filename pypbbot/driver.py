@@ -13,12 +13,12 @@ from pypbbot.utils import Clips, sendBackClipsTo, SingletonType
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 from pypbbot.logging import logger
 from pypbbot.plugin import _handle as handleAffair
-from pypbbot.typing import ProtobufBotEvent
+from pypbbot.typing import Event
 
 class BaseDriver:
     def __init__(self, botId: int):
         self.botId = botId
-        self._handler_registry: Dict[Type[ProtobufBotEvent], Callable[[ProtobufBotEvent], Awaitable[Optional[bool]]]] = {}
+        self._handler_registry: Dict[Type[Event], Callable[[Event], Awaitable[Optional[bool]]]] = {}
         self._handler_registry[PrivateMessageEvent] = getattr(self, 'onPrivateMessage')
         self._handler_registry[GroupMessageEvent] = getattr(self, 'onGroupMessage')
         self._handler_registry[GroupUploadNoticeEvent] = getattr(self, 'onGroupUploadNotice')
@@ -32,7 +32,7 @@ class BaseDriver:
         self._handler_registry[FriendRequestEvent] = getattr(self, 'onFriendRequest')
         self._handler_registry[GroupRequestEvent] = getattr(self, 'onGroupRequest')
 
-    async def handle(self, event: ProtobufBotEvent):
+    async def handle(self, event: Event):
         if type(event) in self._handler_registry.keys():
             await self._handler_registry[type(event)](event)
     
@@ -92,7 +92,7 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
     def __new__(cls, *args, **kwargs):
         return object.__new__(cls)
 
-    async def handle(self, event: ProtobufBotEvent):
+    async def handle(self, event: Event):
         from pypbbot.affairs import BaseAffair, ChatAffair
         affair :BaseAffair
         if isinstance(event, PrivateMessageEvent):
@@ -103,5 +103,5 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
             affair = BaseAffair(self, event)
         await handleAffair(affair)
 
-FunctionalDriver = Callable[[ProtobufBotEvent], Awaitable[None]]
+FunctionalDriver = Callable[[Event], Awaitable[None]]
 Drivable = Union[BaseDriver, FunctionalDriver]

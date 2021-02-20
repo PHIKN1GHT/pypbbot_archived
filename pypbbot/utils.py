@@ -5,6 +5,7 @@ if typing.TYPE_CHECKING:
     from typing import Tuple, Dict, Union, Type, List, Optional, Set, Iterator, Dict, Callable
     from pypbbot.affairs import BaseAffair
     from pypbbot.typing import Filter
+    from collections import _OrderedDictKeysView
 
 import copy
 import threading
@@ -26,7 +27,7 @@ def in_lower_case(text: str) -> str:
 
 T = TypeVar('T', bound='Clips') 
 class Clips():
-    def __init__(self):
+    def __init__(self) -> None:
         self._data: List[Tuple[str, Dict[str,str]]] = []
     
     def append(self: T, data: Tuple[str, Dict[str,str]]) -> T:
@@ -83,27 +84,28 @@ class LRULimitedDict(Mapping[KT, VT]):
     def pop(self, key: KT) -> VT:
         return self.cache.pop(key)
     
-    def remove(self, key: KT):
+    def remove(self, key: KT) -> None:
         self.cache.pop(key)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[KT]:
         return self.cache.__iter__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.cache.__len__()
 
     def __getitem__(self, key: KT) -> VT:
         self.cache.move_to_end(key)
         return self.cache[key]
 
-    def __setitem__(self, key: KT, value: VT):
+    def __setitem__(self, key: KT, value: VT) -> None:
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.capacity:
             self.cache.popitem(last = False)
 
-    def keys(self):
+    def keys(self) -> _OrderedDictKeysView[KT]:
         return self.cache.keys()
+        
 
 from asyncio import Lock, get_event_loop
 

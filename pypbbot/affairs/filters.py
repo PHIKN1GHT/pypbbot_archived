@@ -13,6 +13,9 @@ from pypbbot.utils import sendBackClipsTo, Clips, partial_filter
 from pypbbot.affairs import ChatAffair
 from pypbbot.typing import LoadingEvent, UnloadingEvent
 
+__all__ = ['_unfilterable','_on_loading','_on_unloading','_on_starts_with_filter','_union_filter','UnionFilter']
+
+
 def _unfilterable(_: BaseAffair) -> bool:
         return True
 
@@ -32,5 +35,5 @@ def _union_filter(handlers: List[Handler], affair: BaseAffair) -> bool:
             return True
     return False
 
-def UnionFilter(handlers: List[Handler]):
+def UnionFilter(handlers: List[Handler]) -> Filter:
     return partial_filter(_union_filter, handlers)

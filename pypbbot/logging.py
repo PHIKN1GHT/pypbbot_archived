@@ -4,7 +4,9 @@ from loguru import logger
 from typing import cast
 from types import FrameType
 
-def _init_loggers():
+__all__ = ['LOG_CONFIG', 'logger']
+
+def _init_loggers() -> None:
     logger.remove()
     logger.add(sys.stdout, colorize=True, diagnose=False, format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> [<lvl>{level}</lvl>] <c><u><{name}></u></c>: {message}")
 

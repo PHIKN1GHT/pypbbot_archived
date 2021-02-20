@@ -24,12 +24,12 @@ from pypbbot.protocol import SendGroupMsgReq
 from starlette.websockets import WebSocketDisconnect
 
 app = FastAPI()
-
+loop = None
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
 resp_cache: LRULimitedDict[str, Future] = LRULimitedDict()
 
 @app.on_event("startup")
-async def init():
+async def init() -> None:
     """Init all the plugins after preload.
     """
     global loop
