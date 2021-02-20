@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import typing
 if typing.TYPE_CHECKING:
-    from typing import Tuple, Dict, Union, Type, List, Optional, Set, Iterator, Dict, Callable
-    from pypbbot.affairs import BaseAffair
-    from pypbbot.typing import Filter
+    from typing import Tuple, Dict, Union, Type, List, Optional, Set, Iterator, Dict, Callable, Any
+    from pypbbot.affairs import BaseAffair, Filter
+    from pypbbot.typing import ProtobufBotAPI
     from collections import _OrderedDictKeysView
+    from asyncio.locks import _ContextManager
 
 import copy
 import threading
 from typing import TypeVar, Mapping
 from returns.curry import partial
 from collections import OrderedDict
+from asyncio import Lock, get_event_loop
 from pypbbot.typing import ProtobufBotMessage as Message
 import pypbbot.server
 from pypbbot.protocol import SendPrivateMsgReq, SendGroupMsgReq, PrivateMessageEvent, GroupMessageEvent
@@ -107,16 +109,14 @@ class LRULimitedDict(Mapping[KT, VT]):
         return self.cache.keys()
         
 
-from asyncio import Lock, get_event_loop
-
 '''
     Locking something in a async function.
 '''
-class AsyncLock():
-    def __init__(self):
-        self._lock = None
+class LazyLock():
+    def __init__(self) -> None:
+        self._lock: Optional[Lock] = None
 
-    async def lock(self):
+    async def lock(self) -> _ContextManager:
         if not self._lock:
             self._lock = Lock(loop = get_event_loop())
         return await self._lock
@@ -124,15 +124,14 @@ class AsyncLock():
 
 class SingletonType(type):
     _instance_lock = threading.Lock()
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
         if not hasattr(cls, "_instance"):
             with SingletonType._instance_lock:
                 if not hasattr(cls, "_instance"):
                     cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
         return cls._instance
 
-
-async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]):
+async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]) -> Optional[ProtobufBotAPI]:
     clips = Clips() + clips
     api_content: Optional[Union[SendPrivateMsgReq, SendGroupMsgReq]] = None
     if isinstance(event, PrivateMessageEvent):
@@ -144,11 +143,7 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
 
-def partial_filter(func, *args, **kwargs) -> Filter:
+def partial_filter(func: Any, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Filter:
     pfunc = partial(func, *args, **kwargs)
     setattr(pfunc, '__name__', "{}[{}]".format(partial.__name__, func.__name__))
     return pfunc
-
-#aa: Callable[[int], None] = NamedPartial(func, 'asd')
-#reveal_type(partial(func, 'asd'))
-#reveal_type(NamedPartial(func, 'asd'))

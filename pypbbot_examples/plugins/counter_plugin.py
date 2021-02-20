@@ -1,9 +1,9 @@
 from pypbbot.affairs import BaseAffair, ChatAffair, onStartsWith, onLoading, onUnloading
-from pypbbot.utils import Clips, AsyncLock
+from pypbbot.utils import Clips, LazyLock
 from pypbbot import logger
 import asyncio
 
-i, lock = 0, AsyncLock()
+i, lock = 0, LazyLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
 from typing import Awaitable

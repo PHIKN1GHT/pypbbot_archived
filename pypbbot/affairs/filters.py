@@ -5,8 +5,7 @@ if typing.TYPE_CHECKING:
     from typing import Callable
     from pypbbot.typing import Event
     from pypbbot.driver import BaseDriver, AffairDriver
-    from pypbbot.affairs import HandlerPriority, BaseAffair
-    from pypbbot.typing import Handler, Filter
+    from pypbbot.affairs import HandlerPriority, BaseAffair, Handler, Filter
 
 from pypbbot.logging import logger
 from pypbbot.utils import sendBackClipsTo, Clips, partial_filter
@@ -36,4 +35,4 @@ def _union_filter(handlers: List[Handler], affair: BaseAffair) -> bool:
     return False
 
 def UnionFilter(handlers: List[Handler]) -> Filter:
-    return partial_filter(_union_filter, handlers)
+    return partial_filter(_union_filter, (handlers, ))

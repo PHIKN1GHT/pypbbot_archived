@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import typing
 if typing.TYPE_CHECKING:
-    from pypbbot.affairs import BaseAffair, HandlerPriority
+    from pypbbot.affairs import BaseAffair, HandlerPriority, Handler, Filter
     from typing import Callable, Type, Dict, Tuple
-    from pypbbot.typing import Handler, Filter
 
 from queue import PriorityQueue
 from pypbbot.logging import logger
@@ -12,17 +11,21 @@ import typing
 
 
 class CallableHandler():
-    def __init__(self, func: Handler, priority) -> None:
+    def __init__(self, func: Handler, priority: HandlerPriority) -> None:
         self._func = func
         self._priority = priority
         
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CallableHandler):
+            return NotImplemented
         return self._priority == other._priority
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, CallableHandler):
+            return NotImplemented
         return self._priority < other._priority
 
-_handlers: Dict[str, Tuple[Filter, PriorityQueue]] = {}
+_handlers: Dict[str, Tuple[Filter, PriorityQueue[CallableHandler]]] = {}
 
 def _register(name: str, affair_filter: Filter, func: Handler, priority: HandlerPriority) -> None:
     logger.debug('Registering handler [{}] for filter [{}] ...'.format(func.__name__, affair_filter.__name__))

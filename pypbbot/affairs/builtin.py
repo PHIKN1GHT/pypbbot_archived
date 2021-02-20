@@ -22,7 +22,9 @@ class HandlerPriority(Enum):
     LOW = 4
     VERY_LOW = 5
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, HandlerPriority):
+            return NotImplemented
         return self.value < other.value
 
 class BaseAffair:
@@ -35,7 +37,7 @@ class BaseAffair:
         return
 
 class ChatAffair(BaseAffair):
-    def __init__(self, driver, event: Union[GroupMessageEvent, PrivateMessageEvent], sender_id) -> None:
+    def __init__(self, driver: AffairDriver, event: Union[GroupMessageEvent, PrivateMessageEvent], sender_id: int) -> None:
         self.event: Union[GroupMessageEvent, PrivateMessageEvent] = event
         self.driver: AffairDriver = driver
         self.receiver_id: int = event.self_id
@@ -43,5 +45,5 @@ class ChatAffair(BaseAffair):
         self.raw_message: str = event.raw_message
         return
 
-    async def send(self, clips: Union[Clips, str, int, float]) -> None:
+    async def send(self, clips: Union[Clips, str, int, float]) -> Any:
         return await sendBackClipsTo(self.event, clips)

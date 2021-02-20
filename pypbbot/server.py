@@ -3,8 +3,8 @@ from __future__ import annotations
 import typing
 if typing.TYPE_CHECKING:
     from asyncio import Future
-    from typing import Tuple, Dict, Callable, Awaitable, Union
-    from pypbbot.driver import BaseDriver, AffairDriver, Drivable
+    from typing import Tuple, Dict, Callable, Awaitable, Union, Optional
+    from pypbbot.driver import Drivable
     from pypbbot.typing import ProtobufBotAPI
 
 import os
@@ -14,7 +14,7 @@ import uuid
 import inspect
 import uvicorn # type: ignore
 from fastapi import FastAPI, WebSocket
-from pypbbot.driver import AffairDriver
+from pypbbot.driver import AffairDriver, BaseDriver
 from pypbbot.utils import in_lower_case, LRULimitedDict
 from pypbbot.typing import ProtobufBotFrame as Frame, LoadingEvent, UnloadingEvent
 from pypbbot.logging import logger, LOG_CONFIG
@@ -26,7 +26,7 @@ from starlette.websockets import WebSocketDisconnect
 app = FastAPI()
 loop = None
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
-resp_cache: LRULimitedDict[str, Future] = LRULimitedDict()
+resp_cache: LRULimitedDict[str, Future[Optional[ProtobufBotAPI]]] = LRULimitedDict()
 
 @app.on_event("startup")
 async def init() -> None:
@@ -40,7 +40,7 @@ async def init() -> None:
     await AffairDriver().handle(LoadingEvent())
 
 @app.on_event("shutdown")
-async def close():
+async def close() -> None:
     logger.info('Shutting down. Have a nice day!')
     await AffairDriver().handle(UnloadingEvent())
     
@@ -102,7 +102,7 @@ async def recv_frame(frame: Frame, botId: int) -> None:
             else:
                 resp_cache[frame.echo].set_result(None)
 
-async def send_frame(botId: int, api_content: ProtobufBotAPI) -> ProtobufBotAPI:
+async def send_frame(botId: int, api_content: ProtobufBotAPI) -> Optional[ProtobufBotAPI]:
     frame = Frame()
     ws, _ = drivers[botId]
     frame.botId, frame.echo, frame.ok = botId, str(uuid.uuid1()), True
