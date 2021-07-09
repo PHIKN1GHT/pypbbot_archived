@@ -10,7 +10,7 @@
 
 其次，按照如下方式之一编写机器人程序后，通过调用 `python *_driver.py` 即可运行。（注意把 `*_driver.py` 替换成你的主程序文件的文件名）。
 
-具体说明见[新手指南](https://phikn1ght.github.io/2021/02/01/beginners-guide-for-pypbbot/)
+具体说明见[新手指南](https://phikn1ght.github.io/beginners-guide-for-pypbbot/)
 
 ## 类驱动模式
 
