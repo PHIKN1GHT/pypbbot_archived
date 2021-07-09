@@ -12,7 +12,7 @@ import functools
 from pypbbot.logging import logger
 from pypbbot.plugin import _register
 from pypbbot.utils import partial_filter
-from pypbbot.affairs import HandlerPriority
+from pypbbot.affairs import HandlerPriority, ChatAffair
 
 __all__ = ['useFilter','unfilterable','onPrivateMessage','onGroupMessage','onStartsWith','onEndsWith','onLoading','onUnloading','onMessage']
 

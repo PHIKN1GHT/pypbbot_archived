@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 if typing.TYPE_CHECKING:
     from pypbbot.affairs import BaseAffair, HandlerPriority, Handler, Filter
-    from typing import Callable, Type, Dict, Tuple
+    from typing import Callable, Type, Dict, Tuple, List
 
 from queue import PriorityQueue
 from pypbbot.logging import logger
@@ -25,22 +25,25 @@ class CallableHandler():
             return NotImplemented
         return self._priority < other._priority
 
-_handlers: Dict[str, Tuple[Filter, PriorityQueue[CallableHandler]]] = {}
+_handlers: Dict[str, List[Tuple[Filter, PriorityQueue[CallableHandler]]]] = {}
 
 def _register(name: str, affair_filter: Filter, func: Handler, priority: HandlerPriority) -> None:
     logger.debug('Registering handler [{}] for filter [{}] ...'.format(func.__name__, affair_filter.__name__))
+    pqueue: PriorityQueue = PriorityQueue()
     if not name in _handlers.keys():
-        _handlers[name] = (affair_filter, PriorityQueue())
-    _, pqueue = _handlers[name]
+        _handlers[name] = [(affair_filter, pqueue)]
+    else:
+        _handlers[name].append((affair_filter, pqueue))
     pqueue.put(CallableHandler(func, priority))
 
 async def _handle(affair: BaseAffair) -> None:
     logger.warning('Handling [{}]'.format(affair))
-    for _, (affair_filter, pqueue) in _handlers.items():
-        if affair_filter(affair):
-            logger.debug('Pass to [{}]'.format(_))
-            for handler in pqueue.queue:
-                await handler._func(affair)
+    for _, filterList in _handlers.items():
+        for affair_filter, pqueue in filterList:
+            if affair_filter(affair):
+                logger.debug('Pass to [{}]'.format(_))
+                for handler in pqueue.queue:
+                    await handler._func(affair)
 
 
 import pkgutil, os
