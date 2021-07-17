@@ -10,19 +10,19 @@
 
 其次，按照如下方式之一编写机器人程序后，通过调用 `python *_driver.py` 即可运行。（注意把 `*_driver.py` 替换成你的主程序文件的文件名）。
 
-具体说明见[新手指南](https://phikn1ght.github.io/2021/02/01/beginners-guide-for-pypbbot/)
+具体说明见[新手指南](https://phikn1ght.github.io/beginners-guide-for-pypbbot/)
 
 ## 类驱动模式
 
-见样例程序源代码： [class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/class_driver.py)
+见样例程序源代码： [class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/class_driver.py)
 
 ## 函数驱动模式
 
-见样例程序源代码： [functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/functional_driver.py)
+见样例程序源代码： [functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/functional_driver.py)
 
 ## 事务驱动模式（即插件模式）
 
-见样例程序源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugin_driver.py) 和样例插件源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/examples/plugins/counter_plugin.py) （注意更改插件目录）
+见样例程序源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/plugin_driver.py) 和样例插件源代码： [plugin_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/plugins/counter_plugin.py) （注意更改插件目录）
 
 # 注意事项
 

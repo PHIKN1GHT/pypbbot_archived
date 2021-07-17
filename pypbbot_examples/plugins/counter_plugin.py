@@ -6,10 +6,12 @@ import asyncio
 i, lock = 0, LazyLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
+from typing import Awaitable
+
 @onStartsWith('#hello')
-async def _(affair: ChatAffair):
+async def _(affair: ChatAffair) -> None:
     global i, lock
-    with await lock.try_lock():
+    with await lock.lock():
         await affair.send('Hello, world! x {}'.format(i))
         await asyncio.sleep(1)
         await affair.send(Clips.from_image_url(akkarin_url) + '\n\阿卡林/\阿卡林/\阿卡林/')

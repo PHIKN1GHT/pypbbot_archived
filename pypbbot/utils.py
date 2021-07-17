@@ -1,6 +1,22 @@
-from typing import List, Tuple, Dict, TypeVar, Union, Type
-from pypbbot.typing import ProtobufBotMessage as Message
+from __future__ import annotations
+
+import typing
+if typing.TYPE_CHECKING:
+    from typing import Tuple, Dict, Union, Type, List, Optional, Set, Iterator, Dict, Callable, Any
+    from pypbbot.affairs import BaseAffair, Filter
+    from pypbbot.typing import ProtobufBotAPI
+    from collections import _OrderedDictKeysView
+    from asyncio.locks import _ContextManager
+
 import copy
+import threading
+from typing import TypeVar, Mapping
+from returns.curry import partial
+from collections import OrderedDict
+from asyncio import Lock, get_event_loop
+from pypbbot.typing import ProtobufBotMessage as Message
+import pypbbot.server
+from pypbbot.protocol import SendPrivateMsgReq, SendGroupMsgReq, PrivateMessageEvent, GroupMessageEvent
 
 def in_lower_case(text: str) -> str:
     lst: List[str] = []
@@ -8,12 +24,12 @@ def in_lower_case(text: str) -> str:
         if char.isupper() and index != 0:
             lst.append("_")
         lst.append(char)
-
     return "".join(lst).lower()
+
 
 T = TypeVar('T', bound='Clips') 
 class Clips():
-    def __init__(self):
+    def __init__(self) -> None:
         self._data: List[Tuple[str, Dict[str,str]]] = []
     
     def append(self: T, data: Tuple[str, Dict[str,str]]) -> T:
@@ -60,13 +76,6 @@ class Clips():
     def from_image_url(cls: Type[T], url: str) -> T:
         return cls().append(("image", {"url": url}))
 
-
-from collections import OrderedDict
-from typing import Optional, TypeVar, Generic, Mapping, Set
-from asyncio import Future
-
-from typing import Generic, TypeVar, Mapping, Iterator, Dict
-
 KT = TypeVar('KT')
 VT = TypeVar('VT')
 class LRULimitedDict(Mapping[KT, VT]):
@@ -77,46 +86,52 @@ class LRULimitedDict(Mapping[KT, VT]):
     def pop(self, key: KT) -> VT:
         return self.cache.pop(key)
     
-    def remove(self, key: KT):
+    def remove(self, key: KT) -> None:
         self.cache.pop(key)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[KT]:
         return self.cache.__iter__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.cache.__len__()
 
     def __getitem__(self, key: KT) -> VT:
         self.cache.move_to_end(key)
         return self.cache[key]
 
-    def __setitem__(self, key: KT, value: VT):
+    def __setitem__(self, key: KT, value: VT) -> None:
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.capacity:
             self.cache.popitem(last = False)
 
-    def keys(self):
+    def keys(self) -> _OrderedDictKeysView[KT]:
         return self.cache.keys()
-
-from asyncio import Lock, get_event_loop
+        
 
 '''
     Locking something in a async function.
 '''
 class LazyLock():
-    def __init__(self):
-        self._lock = None
+    def __init__(self) -> None:
+        self._lock: Optional[Lock] = None
 
-    async def try_lock(self):
+    async def lock(self) -> _ContextManager:
         if not self._lock:
             self._lock = Lock(loop = get_event_loop())
         return await self._lock
 
-import pypbbot
-from typing import Optional
-from pypbbot.protocol import SendPrivateMsgReq, PrivateMessageEvent, GroupMessageEvent, SendGroupMsgReq
-async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]):
+
+class SingletonType(type):
+    _instance_lock = threading.Lock()
+    def __call__(cls, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
+        if not hasattr(cls, "_instance"):
+            with SingletonType._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
+        return cls._instance
+
+async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]) -> Optional[ProtobufBotAPI]:
     clips = Clips() + clips
     api_content: Optional[Union[SendPrivateMsgReq, SendGroupMsgReq]] = None
     if isinstance(event, PrivateMessageEvent):
@@ -127,3 +142,8 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
         api_content.group_id, auto_escape = event.group_id, True
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
+
+def partial_filter(func: Any, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Filter:
+    pfunc = partial(func, *args, **kwargs)
+    setattr(pfunc, '__name__', "{}[{}]".format(partial.__name__, func.__name__))
+    return pfunc

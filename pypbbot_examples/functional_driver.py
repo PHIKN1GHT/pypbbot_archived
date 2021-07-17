@@ -22,7 +22,7 @@ async def functional_driver(botId: int) -> FunctionalDriver: # 函数驱动器�
     async def onMessage(event: Event) -> None:
         if isinstance(event, PrivateMessageEvent) or isinstance(event, GroupMessageEvent):
             global lock
-            with await lock.try_lock():
+            with await lock.lock():
                 await sayHello(event)
 
     return onMessage

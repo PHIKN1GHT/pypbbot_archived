@@ -1,47 +1,50 @@
-from typing import Callable, Type, Dict, Tuple
+from __future__ import annotations
+
+import typing
+if typing.TYPE_CHECKING:
+    from pypbbot.affairs import BaseAffair, HandlerPriority, Handler, Filter
+    from typing import Callable, Type, Dict, Tuple, List
+
 from queue import PriorityQueue
 from pypbbot.logging import logger
-from pypbbot.affairs import BaseAffair, HandlerPriority
+import typing
+
 
 class CallableHandler():
-    def __init__(self, func: Callable[[BaseAffair], bool], priority):
+    def __init__(self, func: Handler, priority: HandlerPriority) -> None:
         self._func = func
         self._priority = priority
         
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CallableHandler):
+            return NotImplemented
         return self._priority == other._priority
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, CallableHandler):
+            return NotImplemented
         return self._priority < other._priority
 
-_handlers: Dict[str, Tuple[Callable[[BaseAffair], bool], PriorityQueue]] = {}
+_handlers: Dict[str, List[Tuple[Filter, PriorityQueue[CallableHandler]]]] = {}
 
-def _register(affair_filter: Callable[[BaseAffair], bool], func: Callable[[BaseAffair], bool], priority: HandlerPriority):
+def _register(name: str, affair_filter: Filter, func: Handler, priority: HandlerPriority) -> None:
     logger.debug('Registering handler [{}] for filter [{}] ...'.format(func.__name__, affair_filter.__name__))
-    if not affair_filter.__name__ in _handlers.keys():
-        _handlers[affair_filter.__name__] = (affair_filter, PriorityQueue())
-    _, pqueue = _handlers[affair_filter.__name__]
+    pqueue: PriorityQueue = PriorityQueue()
+    if not name in _handlers.keys():
+        _handlers[name] = [(affair_filter, pqueue)]
+    else:
+        _handlers[name].append((affair_filter, pqueue))
     pqueue.put(CallableHandler(func, priority))
 
-async def _handle(affair: BaseAffair):
+async def _handle(affair: BaseAffair) -> None:
     logger.warning('Handling [{}]'.format(affair))
-    for _, (affair_filter, pqueue) in _handlers.items():
-        if affair_filter(affair):
-            logger.debug('Pass to [{}]'.format(_))
-            for handler in pqueue.queue:
-                await handler._func(affair)
-                if affair.finished:
-                    break
+    for _, filterList in _handlers.items():
+        for affair_filter, pqueue in filterList:
+            if affair_filter(affair):
+                logger.debug('Pass to [{}]'.format(_))
+                for handler in pqueue.queue:
+                    await handler._func(affair)
 
-import functools
-def onFilter(filter_func: Callable[[BaseAffair], bool], priority: HandlerPriority = HandlerPriority.NORMAL):
-    def decorator(func: Callable[[BaseAffair], bool]):
-        _register(filter_func, func, priority) # DO NOT USE LAMBDA EXPRESSION
-        @functools.wraps(func)
-        def wrapper(*args, **kw):
-            return func(*args, **kw)
-        return wrapper
-    return decorator
 
 import pkgutil, os
 from pkgutil import ImpLoader
@@ -49,7 +52,7 @@ from importlib.abc import PathEntryFinder, MetaPathFinder
 from types import ModuleType
 
 _loadedPlugins: Dict[str, ModuleType] = {}
-async def load_plugins(*plugin_dir: str):
+async def load_plugins(*plugin_dir: str) -> Dict[str, ModuleType]:
     for _dir in plugin_dir:
         if not os.path.exists(_dir):
             os.makedirs(_dir)
