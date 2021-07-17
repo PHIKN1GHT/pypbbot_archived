@@ -1,14 +1,14 @@
 # PyProtobufBot
 
-<figure>
-  <img src="https://pypbbot.kale1d0.space/assets/logo_large.png" width="256" style="margin:auto"/>
-  <h1>Pypbbot</h1>
-  <figcaption style="font-style:normal;">一个高效、跨平台、可扩展的<a href="https://github.com/PHIKN1GHT/pypbbot">开源</a> Python QQ 机器人服务端框架。</br>（基于 <a href="https://github.com/ProtobufBot/onebot_idl">
-  ProtobufBot</a> 协议）<br/></figcaption>
-</figure>
-<a href="https://pypbbot.kale1d0.space/">文档主页</a>
-
-注意，本项目仍处于**早期开发阶段**，请勿用于生产环境。
+<p align="center">
+  <img src="https://pypbbot.kale1d0.space/assets/logo_large.png" width="200">
+</p>
+<div align="center">
+Pypbbot：一个高效、跨平台、可扩展的<a href="https://github.com/PHIKN1GHT/pypbbot">开源</a> Python QQ 机器人服务端框架（基于 <a href="https://github.com/ProtobufBot/onebot_idl">
+  ProtobufBot</a> 协议）。<br/>
+<a href="https://pypbbot.kale1d0.space/"><b>文档主页</b></a><br/>
+注意，本项目仍处于<b>早期开发阶段</b>，请勿用于生产环境。
+</div>
 
 # 如何使用
 
