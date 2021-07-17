@@ -1,0 +1,31 @@
+site_name: Pypbbot 0.2a7
+site_url: https://pypbbot.kale1d0.space/
+nav:
+    - 新手指南: getting-start.md
+theme:
+  name: material
+  language: zh
+  logo: /assets/logo.png
+  favicon: /assets/favicon.png
+  palette:
+    primary: white
+markdown_extensions:
+  - attr_list
+  - pymdownx.highlight
+  - pymdownx.superfences
+extra:
+  alternate:
+    - name: 简体中文
+      link: /
+      lang: zh
+    - name: English
+      link: /en/
+      lang: en
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/PHIKN1GHT/pypbbot
+copyright: Copyright &copy; 2020 - 2021 Kale1d0
+plugins:
+  - mike

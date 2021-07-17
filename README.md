@@ -1,6 +1,12 @@
 # PyProtobufBot
 
-本项目为[ProtobufBot](https://github.com/ProtobufBot/onebot_idl)协议服务端的Python语言实现。
+<figure>
+  <img src="https://pypbbot.kale1d0.space/assets/logo_large.png" width="256" style="margin:auto"/>
+  <h1>Pypbbot</h1>
+  <figcaption style="font-style:normal;">一个高效、跨平台、可扩展的<a href="https://github.com/PHIKN1GHT/pypbbot">开源</a> Python QQ 机器人服务端框架。</br>（基于 <a href="https://github.com/ProtobufBot/onebot_idl">
+  ProtobufBot</a> 协议）<br/></figcaption>
+</figure>
+<a href="https://pypbbot.kale1d0.space/">文档主页</a>
 
 注意，本项目仍处于**早期开发阶段**，请勿用于生产环境。
 
@@ -9,8 +15,6 @@
 首先，运行 `pip install --upgrade pypbbot` 以安装本项目或更新至最新版本。
 
 其次，按照如下方式之一编写机器人程序后，通过调用 `python *_driver.py` 即可运行。（注意把 `*_driver.py` 替换成你的主程序文件的文件名）。
-
-具体说明见[新手指南](https://phikn1ght.github.io/beginners-guide-for-pypbbot/)
 
 ## 类驱动模式
 
