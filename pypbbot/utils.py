@@ -18,6 +18,7 @@ from pypbbot.typing import ProtobufBotMessage as Message
 import pypbbot.server
 from pypbbot.protocol import SendPrivateMsgReq, SendGroupMsgReq, PrivateMessageEvent, GroupMessageEvent
 
+
 def in_lower_case(text: str) -> str:
     lst: List[str] = []
     for index, char in enumerate(text):
@@ -27,12 +28,14 @@ def in_lower_case(text: str) -> str:
     return "".join(lst).lower()
 
 
-T = TypeVar('T', bound='Clips') 
+T = TypeVar('T', bound='Clips')
+
+
 class Clips():
     def __init__(self) -> None:
-        self._data: List[Tuple[str, Dict[str,str]]] = []
-    
-    def append(self: T, data: Tuple[str, Dict[str,str]]) -> T:
+        self._data: List[Tuple[str, Dict[str, str]]] = []
+
+    def append(self: T, data: Tuple[str, Dict[str, str]]) -> T:
         self._data.append(data)
         return self
 
@@ -43,7 +46,7 @@ class Clips():
         elif isinstance(other, str) or isinstance(other, int) or isinstance(other, float):
             clips._data += Clips.from_str(str(other))._data
         return clips
-    
+
     def __radd__(self: T, other: Union[T, str, int, float]) -> T:
         clips = copy.deepcopy(self)
         if isinstance(other, Clips):
@@ -55,7 +58,8 @@ class Clips():
     def __str__(self: T) -> str:
         reprstr = ''
         for datum in self._data:
-            reprstr += datum[1]['text'] if datum[0] == 'text' else str(datum[1])
+            reprstr += datum[1]['text'] if datum[0] == 'text' else str(
+                datum[1])
         return reprstr
 
     def toMessageList(self: T) -> List[Message]:
@@ -76,8 +80,11 @@ class Clips():
     def from_image_url(cls: Type[T], url: str) -> T:
         return cls().append(("image", {"url": url}))
 
+
 KT = TypeVar('KT')
 VT = TypeVar('VT')
+
+
 class LRULimitedDict(Mapping[KT, VT]):
     def __init__(self, capacity: int = 65536):
         self.cache: OrderedDict[KT, VT] = OrderedDict()
@@ -85,7 +92,7 @@ class LRULimitedDict(Mapping[KT, VT]):
 
     def pop(self, key: KT) -> VT:
         return self.cache.pop(key)
-    
+
     def remove(self, key: KT) -> None:
         self.cache.pop(key)
 
@@ -103,33 +110,38 @@ class LRULimitedDict(Mapping[KT, VT]):
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.capacity:
-            self.cache.popitem(last = False)
+            self.cache.popitem(last=False)
 
     def keys(self) -> _OrderedDictKeysView[KT]:
         return self.cache.keys()
-        
+
 
 '''
     Locking something in a async function.
 '''
+
+
 class LazyLock():
     def __init__(self) -> None:
         self._lock: Optional[Lock] = None
 
     async def lock(self) -> _ContextManager:
         if not self._lock:
-            self._lock = Lock(loop = get_event_loop())
+            self._lock = Lock(loop=get_event_loop())
         return await self._lock
 
 
 class SingletonType(type):
     _instance_lock = threading.Lock()
+
     def __call__(cls, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
         if not hasattr(cls, "_instance"):
             with SingletonType._instance_lock:
                 if not hasattr(cls, "_instance"):
-                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
+                    cls._instance = super(
+                        SingletonType, cls).__call__(*args, **kwargs)
         return cls._instance
+
 
 async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]) -> Optional[ProtobufBotAPI]:
     clips = Clips() + clips
@@ -143,7 +155,9 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
 
+
 def partial_filter(func: Any, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Filter:
     pfunc = partial(func, *args, **kwargs)
-    setattr(pfunc, '__name__', "{}[{}]".format(partial.__name__, func.__name__))
+    setattr(pfunc, '__name__', "{}[{}]".format(
+        partial.__name__, func.__name__))
     return pfunc

@@ -1,4 +1,6 @@
 from __future__ import annotations
+import queue
+from queue import Queue
 
 import typing
 if typing.TYPE_CHECKING:
@@ -12,7 +14,7 @@ import sys
 import asyncio
 import uuid
 import inspect
-import uvicorn # type: ignore
+import uvicorn  # type: ignore
 from fastapi import FastAPI, WebSocket
 from pypbbot.driver import AffairDriver, BaseDriver
 from pypbbot.utils import in_lower_case, LRULimitedDict
@@ -26,7 +28,9 @@ from starlette.websockets import WebSocketDisconnect
 app = FastAPI()
 loop = None
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
-resp_cache: LRULimitedDict[str, Future[Optional[ProtobufBotAPI]]] = LRULimitedDict()
+resp_cache: LRULimitedDict[str,
+                           Future[Optional[ProtobufBotAPI]]] = LRULimitedDict()
+
 
 @app.on_event("startup")
 async def init() -> None:
@@ -39,15 +43,18 @@ async def init() -> None:
     logger.info('Everything is almost ready. Hello, PyProtobufBot world!')
     await AffairDriver().handle(LoadingEvent())
 
+
 @app.on_event("shutdown")
 async def close() -> None:
     logger.info('Shutting down. Have a nice day!')
     await AffairDriver().handle(UnloadingEvent())
-    
-@app.websocket("/ws/test/")
+
+
+@app.websocket("/ws/*/")
 async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
-    logger.info('Accepted client from {}:{}'.format(websocket.client.host, websocket.client.port))
+    logger.info('Accepted client from {}:{}'.format(
+        websocket.client.host, websocket.client.port))
     while True:
         try:
             rawdata: bytes = await websocket.receive_bytes()
@@ -60,7 +67,8 @@ async def handle_websocket(websocket: WebSocket) -> None:
                 driver_builder = getattr(app, 'driver_builder')
 
                 if inspect.isclass(driver_builder):
-                    drivers[frame.botId] = (websocket, driver_builder(frame.botId))
+                    drivers[frame.botId] = (
+                        websocket, driver_builder(frame.botId))
                 else:
                     drivers[frame.botId] = (websocket, await driver_builder(frame.botId))
             else:
@@ -68,9 +76,11 @@ async def handle_websocket(websocket: WebSocket) -> None:
                 drivers[frame.botId] = (websocket, dri)
             await recv_frame(frame, frame.botId)
         except WebSocketDisconnect:
-            logger.warning('Connection to {} has been closed.'.format(websocket.client.host))
+            logger.warning('Connection to {} has been closed.'.format(
+                websocket.client.host))
             break
         #asyncio.create_task(recv_frame(frame, frame.botId))
+
 
 async def recv_frame(frame: Frame, botId: int) -> None:
     """Unpack frame from client.
@@ -83,34 +93,40 @@ async def recv_frame(frame: Frame, botId: int) -> None:
       None.
     """
     frame_type = Frame.FrameType.Name(frame.frame_type)
-    logger.debug('Recv frame [{}] from client [{}]'.format(frame_type, frame.botId))
+    logger.debug('Recv frame [{}] from client [{}]'.format(
+        frame_type, frame.botId))
     _, driver = drivers[frame.botId]
     if frame_type.endswith('Event'):
         event = getattr(frame, frame.WhichOneof('data'))
-        #if isinstance(event, PrivateMessageEvent):
+        # if isinstance(event, PrivateMessageEvent):
         #    print(event.raw_message)
         if isinstance(driver, BaseDriver):
-            #await driver.handle(event)
+            # await driver.handle(event)
             asyncio.create_task(driver.handle(event))
-        else: # Support for Functional Driver Builder
-            #await driver(event)
+        else:  # Support for Functional Driver Builder
+            # await driver(event)
             asyncio.create_task(driver(event))
     else:
         if frame.echo in resp_cache.keys():
             if isinstance(frame.WhichOneof('data'), str):
-                resp_cache[frame.echo].set_result(getattr(frame, frame.WhichOneof('data')))
+                resp_cache[frame.echo].set_result(
+                    getattr(frame, frame.WhichOneof('data')))
             else:
                 resp_cache[frame.echo].set_result(None)
+
 
 async def send_frame(botId: int, api_content: ProtobufBotAPI) -> Optional[ProtobufBotAPI]:
     frame = Frame()
     ws, _ = drivers[botId]
     frame.botId, frame.echo, frame.ok = botId, str(uuid.uuid1()), True
-    frame.frame_type = getattr(Frame.FrameType, 'T' + type(api_content).__name__)
-    getattr(frame, in_lower_case(type(api_content).__name__)).CopyFrom(api_content)
+    frame.frame_type = getattr(
+        Frame.FrameType, 'T' + type(api_content).__name__)
+    getattr(frame, in_lower_case(
+        type(api_content).__name__)).CopyFrom(api_content)
     data = frame.SerializeToString()
     frame_type = Frame.FrameType.Name(frame.frame_type)
-    logger.debug('Send frame [{}] to client [{}]'.format(frame_type, frame.botId))
+    logger.debug('Send frame [{}] to client [{}]'.format(
+        frame_type, frame.botId))
     await ws.send_bytes(data)
     resp_cache[frame.echo] = asyncio.get_event_loop().create_future()
 
@@ -131,8 +147,6 @@ async def sendPrivateTo(botId: int, user_id: int, clips: Clips):
     return await send_frame(botId, api_content)
 '''
 
-def run_server(**kwargs): # type: ignore
-    uvicorn.run(loop="asyncio", log_config = LOG_CONFIG, **kwargs)
 
-import queue
-from queue import Queue
+def run_server(**kwargs):  # type: ignore
+    uvicorn.run(loop="asyncio", log_config=LOG_CONFIG, **kwargs)

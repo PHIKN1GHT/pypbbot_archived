@@ -14,8 +14,9 @@ from pypbbot.utils import sendBackClipsTo
 
 __all__ = ['HandlerPriority', 'BaseAffair', 'ChatAffair']
 
+
 class HandlerPriority(Enum):
-    SYSTEM = 0 # SHOULD NOT USED BY PLUGINS
+    SYSTEM = 0  # SHOULD NOT USED BY PLUGINS
     VERY_HIGH = 1
     HIGH = 2
     NORMAL = 3
@@ -27,14 +28,17 @@ class HandlerPriority(Enum):
             return NotImplemented
         return self.value < other.value
 
+
 class BaseAffair:
     def __init__(self, driver: AffairDriver, event: Event) -> None:
-        logger.debug('A new affair has been created for event [{}]'.format(type(event)))
+        logger.debug(
+            'A new affair has been created for event [{}]'.format(type(event)))
         self.event: Optional[Event] = event
         self.driver: AffairDriver = driver
         self.states: Dict[str, Any] = {}
         self.finished: bool = False
         return
+
 
 class ChatAffair(BaseAffair):
     def __init__(self, driver: AffairDriver, event: Union[GroupMessageEvent, PrivateMessageEvent], sender_id: int) -> None:

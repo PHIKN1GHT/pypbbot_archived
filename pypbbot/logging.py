@@ -6,13 +6,18 @@ from types import FrameType
 
 __all__ = ['LOG_CONFIG', 'logger']
 
+
 def _init_loggers() -> None:
     logger.remove()
-    logger.add(sys.stdout, colorize=True, diagnose=False, format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> [<lvl>{level}</lvl>] <c><u><{name}></u></c>: {message}")
+    logger.add(sys.stdout, colorize=True, diagnose=False,
+               format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> [<lvl>{level}</lvl>] <c><u><{name}></u></c>: {message}")
+
 
 _init_loggers()
 
 # Copied From https://github.com/nsidnev/fastapi-realworld-example-app
+
+
 class LoguruHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:  # pragma: no cover
         # Get corresponding Loguru level if it exists
@@ -30,6 +35,7 @@ class LoguruHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(
             level, record.getMessage(),
         )
+
 
 LOG_CONFIG = {
     "version": 1,
