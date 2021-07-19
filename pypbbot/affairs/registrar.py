@@ -2,8 +2,8 @@
 from __future__ import annotations
 from .filters import _on_unloading
 from .filters import _on_loading
-from pypbbot.protocol import GroupMessageEvent
-from pypbbot.protocol import PrivateMessageEvent
+from pypbbot.protocol import GroupMessageEvent, GroupRecallNoticeEvent
+from pypbbot.protocol import PrivateMessageEvent, FriendRecallNoticeEvent
 from .filters import _unfilterable
 from pypbbot.typing import UnloadingEvent
 from pypbbot.typing import LoadingEvent
@@ -84,6 +84,18 @@ def onEndsWith(suffix: str, priority: HandlerPriority = HandlerPriority.NORMAL) 
 
 def onLoading(priority: HandlerPriority = HandlerPriority.NORMAL) -> DecoratedHandler:
     return useFilter(_on_loading, priority)
+
+
+def onGroupRecall(group_id=None, priority: HandlerPriority = HandlerPriority.NORMAL) -> DecoratedHandler:
+    def _filter(_: BaseAffair) -> bool:
+        return isinstance(_.event, GroupRecallNoticeEvent) if group_id is None else (isinstance(_.event, GroupRecallNoticeEvent) and _.event.group_id == group_id)
+    return useFilter(_filter, priority)
+
+
+def onFriendRecall(user_id=None, priority: HandlerPriority = HandlerPriority.NORMAL) -> DecoratedHandler:
+    def _filter(_: BaseAffair) -> bool:
+        return isinstance(_.event, FriendRecallNoticeEvent) if friend_id is None else (isinstance(_.event, GroupRecallNoticeEvent) and _.event.user_id == user_id)
+    return useFilter(_filter, priority)
 
 
 def onUnloading(priority: HandlerPriority = HandlerPriority.NORMAL) -> DecoratedHandler:

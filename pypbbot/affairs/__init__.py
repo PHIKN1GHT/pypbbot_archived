@@ -6,10 +6,10 @@ if typing.TYPE_CHECKING:
 
 from typing import Callable, Coroutine, Any
 from .builtin import HandlerPriority, BaseAffair, ChatAffair
-from .registrar import onEndsWith, onGroupMessage, onMessage, onStartsWith, onLoading, onUnloading
+from .registrar import onEndsWith, onGroupMessage, onMessage, onStartsWith, onLoading, onUnloading, onFriendRecall, onGroupRecall
 
 __all__ = ['HandlerPriority', 'BaseAffair', 'ChatAffair', 'onEndsWith',
-           'onGroupMessage', 'onMessage', 'onStartsWith', 'onLoading', 'onUnloading']
+           'onGroupMessage', 'onMessage', 'onStartsWith', 'onLoading', 'onUnloading', 'onFriendRecall', 'onGroupRecall']
 
 Filter = Callable[[BaseAffair], bool]
 Handler = Callable[[BaseAffair], Coroutine[Any, Any, None]]

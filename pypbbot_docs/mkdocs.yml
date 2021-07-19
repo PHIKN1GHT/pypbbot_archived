@@ -1,7 +1,9 @@
 site_name: Pypbbot 0.2a7
 site_url: https://pypbbot.kale1d0.space/
 nav:
-    - 新手指南: getting-start.md
+  - 新手指南: getting-start.md
+  - 高级主题:
+      - 生命周期: advanced\life-circle.md
 theme:
   name: material
   language: zh

@@ -50,7 +50,7 @@ async def close() -> None:
     await AffairDriver().handle(UnloadingEvent())
 
 
-@app.websocket("/ws/*/")
+@app.websocket("/ws/test/")
 async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
     logger.info('Accepted client from {}:{}'.format(
