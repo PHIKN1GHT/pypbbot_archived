@@ -1,7 +1,10 @@
 site_name: Pypbbot 0.2a7
 site_url: https://pypbbot.kale1d0.space/
 nav:
-  - 新手指南: getting-start.md
+  - 新手指南:
+      - 概览: getting-start\introduction.md
+      - 基本概念: getting-start\basic-concepts.md
+      - 插件化开发: getting-start\basic-concepts.md
   - 高级主题:
       - 生命周期: advanced\life-circle.md
 theme:

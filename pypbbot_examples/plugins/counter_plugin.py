@@ -1,4 +1,4 @@
-from typing import Awaitable
+from typing import Awaitable, cast
 from pypbbot.affairs.registrar import unfilterable
 from pypbbot.affairs import BaseAffair, ChatAffair, onStartsWith, onLoading, onUnloading
 from pypbbot.utils import Clips, LazyLock
@@ -20,10 +20,10 @@ async def _(affair: ChatAffair) -> None:
 
 
 @onLoading()  # 插件加载时触发
-async def _loading(affair: BaseAffair):
+async def _loading(affair: BaseAffair) -> None:
     logger.debug('Counter plugin has been enabled! ')
 
 
 @onUnloading()  # 插件卸载时触发
-async def _unloading(affair: BaseAffair):
+async def _unloading(affair: BaseAffair) -> None:
     logger.debug('Counter plugin has been disabled! ')

@@ -1,16 +1,11 @@
 from __future__ import annotations
-import queue
-from queue import Queue
-
 import typing
+
 if typing.TYPE_CHECKING:
     from asyncio import Future
-    from typing import Tuple, Dict, Callable, Awaitable, Union, Optional
+    from typing import Tuple, Optional, Type
     from pypbbot.driver import Drivable
     from pypbbot.typing import ProtobufBotAPI
-
-import os
-import sys
 import asyncio
 import uuid
 import inspect
@@ -21,11 +16,15 @@ from pypbbot.utils import in_lower_case, LRULimitedDict
 from pypbbot.typing import ProtobufBotFrame as Frame, LoadingEvent, UnloadingEvent
 from pypbbot.logging import logger, LOG_CONFIG
 from pypbbot.plugin import load_plugins
-from pypbbot.protocol import SendGroupMsgReq
 
 from starlette.websockets import WebSocketDisconnect
 
-app = FastAPI()
+
+class PyPbBotApp(FastAPI):
+    driver_builder: Optional[Type[BaseDriver]] = None
+
+
+app = PyPbBotApp()
 loop = None
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
 resp_cache: LRULimitedDict[str,
@@ -38,7 +37,7 @@ async def init() -> None:
     """
     global loop
     loop = asyncio.get_running_loop()
-    if (hasattr(app, 'plugin_path')):
+    if hasattr(app, 'plugin_path'):
         await load_plugins(getattr(app, 'plugin_path'))
     logger.info('Everything is almost ready. Hello, PyProtobufBot world!')
     await AffairDriver().handle(LoadingEvent())
@@ -50,7 +49,7 @@ async def close() -> None:
     await AffairDriver().handle(UnloadingEvent())
 
 
-@app.websocket("/ws/test/")
+@app.websocket("/ws/")
 async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
     logger.info('Accepted client from {}:{}'.format(
@@ -62,8 +61,8 @@ async def handle_websocket(websocket: WebSocket) -> None:
             frame.ParseFromString(rawdata)
 
             if not frame.botId in drivers.keys():
-                if not hasattr(app, 'driver_builder'):
-                    setattr(app, 'driver_builder', BaseDriver)
+                if app.driver_builder is None:
+                    app.driver_builder = BaseDriver
                 driver_builder = getattr(app, 'driver_builder')
 
                 if inspect.isclass(driver_builder):
@@ -79,7 +78,7 @@ async def handle_websocket(websocket: WebSocket) -> None:
             logger.warning('Connection to {} has been closed.'.format(
                 websocket.client.host))
             break
-        #asyncio.create_task(recv_frame(frame, frame.botId))
+        # asyncio.create_task(recv_frame(frame, frame.botId))
 
 
 async def recv_frame(frame: Frame, botId: int) -> None:

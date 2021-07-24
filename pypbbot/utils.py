@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 import copy
 import threading
 from typing import TypeVar, Mapping
-from returns.curry import partial
+
 from collections import OrderedDict
 from asyncio import Lock, get_event_loop
 from pypbbot.typing import ProtobufBotMessage as Message
@@ -154,10 +154,3 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
         api_content.group_id, auto_escape = event.group_id, True
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
-
-
-def partial_filter(func: Any, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Filter:
-    pfunc = partial(func, *args, **kwargs)
-    setattr(pfunc, '__name__', "{}[{}]".format(
-        partial.__name__, func.__name__))
-    return pfunc

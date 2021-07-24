@@ -1,8 +1,6 @@
-from pypbbot import app, run_server
-from pypbbot.driver import FunctionalDriver
-from pypbbot.typing import ProtobufBotEvent as Event
+from pypbbot import app, run_server, BaseDriver
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
-from pypbbot.utils import Clips, LazyLock, sendBackClipsTo
+from pypbbot.utils import Clips, LazyLock, sendBackClipsTo, SingletonType
 from typing import Union
 import asyncio
 
@@ -20,15 +18,19 @@ async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
         i += 1
 
 
-async def functional_driver(botId: int) -> FunctionalDriver:  # 函数驱动器（即一个返回处理函数的高阶函数）
-    async def onMessage(event: Event) -> None:
-        if isinstance(event, PrivateMessageEvent) or isinstance(event, GroupMessageEvent):
-            global lock
+class SimpleDriver(BaseDriver, metaclass=SingletonType):  # 驱动类
+    async def onGroupMessage(self, event: GroupMessageEvent):  # 监听的事件类型
+        if event.raw_message.startswith('#hello'):
+            with await lock.lock():  # 加异步锁
+                await sayHello(event)
+
+    async def onPrivateMessage(self, event: PrivateMessageEvent):
+        if event.raw_message.startswith('#hello'):
             with await lock.lock():
                 await sayHello(event)
-    return onMessage
 
-setattr(app, 'driver_builder', functional_driver)
+
+app.driver_builder = SimpleDriver
 
 if __name__ == '__main__':
     run_server(app='__main__:app', host='localhost', port=8082, reload=True)

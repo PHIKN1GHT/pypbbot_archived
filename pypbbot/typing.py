@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing
 if typing.TYPE_CHECKING:
     pass
-#    from pypbbot.affairs import BaseAffair
 
 from typing import Union, Callable, Awaitable, Coroutine, Any, TypeVar
 from pypbbot.protocol import onebot_api_pb2, onebot_event_pb2, onebot_frame_pb2, onebot_base_pb2
@@ -37,5 +36,3 @@ class UnloadingEvent:
 
 
 Event = Union[ProtobufBotEvent, LoadingEvent, UnloadingEvent]
-
-#Affair = TypeVar('Affair', bound = 'BaseAffair')

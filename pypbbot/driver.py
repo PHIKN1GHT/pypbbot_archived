@@ -2,25 +2,24 @@ from __future__ import annotations
 
 import typing
 if typing.TYPE_CHECKING:
-    from typing import Type, Dict, Optional, Tuple, Any
+    from typing import Type, Dict, Optional, Tuple
     from pypbbot.typing import ProtobufBotAPI
 
-import os
-from typing import Callable, Awaitable, Union
+from typing import Callable, Awaitable, Union, Coroutine, Any
 from pypbbot.protocol import *
 from pypbbot import server
 from pypbbot.utils import Clips, sendBackClipsTo, SingletonType
 from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 from pypbbot.logging import logger
 from pypbbot.plugin import _handle as handleAffair
-from pypbbot.typing import Event
+from pypbbot.typing import ProtobufBotEvent, Event
 
 
 class BaseDriver:
     def __init__(self, botId: int):
         self.botId = botId
-        self._handler_registry: Dict[Type[Event], Callable[[
-            Event], Awaitable[Optional[bool]]]] = {}
+        self._handler_registry: Dict[Type[ProtobufBotEvent], Callable[[
+            ProtobufBotEvent], Awaitable[Optional[bool]]]] = {}
         self._handler_registry[PrivateMessageEvent] = getattr(
             self, 'onPrivateMessage')
         self._handler_registry[GroupMessageEvent] = getattr(
@@ -46,7 +45,7 @@ class BaseDriver:
         self._handler_registry[GroupRequestEvent] = getattr(
             self, 'onGroupRequest')
 
-    async def handle(self, event: Event) -> None:
+    async def handle(self, event: ProtobufBotEvent) -> None:
         if type(event) in self._handler_registry.keys():
             await self._handler_registry[type(event)](event)
 
@@ -129,5 +128,5 @@ class AffairDriver(BaseDriver, metaclass=SingletonType):
         await handleAffair(affair)
 
 
-FunctionalDriver = Callable[[Event], Awaitable[None]]
+FunctionalDriver = Callable[[ProtobufBotEvent], Coroutine[Any, Any, None]]
 Drivable = Union[BaseDriver, FunctionalDriver]

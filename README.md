@@ -20,6 +20,8 @@ Pypbbot：一个高效、跨平台、可扩展的<a href="https://github.com/PHI
 
 见样例程序源代码： [class_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/class_driver.py)
 
+`python -m pypbbot_examples.class_driver`
+
 ## 函数驱动模式
 
 见样例程序源代码： [functional_driver.py](https://github.com/PHIKN1GHT/pypbbot/blob/main/pypbbot_examples/functional_driver.py)
@@ -36,15 +38,15 @@ Pypbbot：一个高效、跨平台、可扩展的<a href="https://github.com/PHI
 
 ## 关于压力测试
 
-测试用例还在编写，理论上最多支持的客户端数量仅限于使用的缓冲池的大小（默认是65536）。
+测试用例还在编写，理论上最多支持的客户端数量仅限于使用的缓冲池的大小（默认是 65536）。
 
-# 设置协议客户端 
+# 设置协议客户端
 
 推荐的协议客户端: [Go-Mirai-Client](https://github.com/ProtobufBot/Go-Mirai-Client)
 
 首先，下载协议客户端并按照文档对其进行编译，随后在控制台中执行以下代码以设置环境变量：
 
-Windows下：
+Windows 下：
 
 ```bat
 set UIN=QQ号
@@ -52,7 +54,7 @@ set PASSWORD=QQ密码
 set WS_URL=ws://localhost:8082/ws/test/
 ```
 
-Linux下：
+Linux 下：
 
 ```bash
 export UIN=QQ号
@@ -72,4 +74,3 @@ export WS_URL=ws://localhost:8082/ws/test/
 - [x] 撤销群聊
 - [x] 插件化与事务处理
 - [x] 日志
-

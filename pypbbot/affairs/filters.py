@@ -1,20 +1,23 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Any, Tuple, Dict
+from returns.curry import partial
 
 import typing
 if typing.TYPE_CHECKING:
-    from typing import Callable
-    from pypbbot.typing import Event
-    from pypbbot.driver import BaseDriver, AffairDriver
-    from pypbbot.affairs import HandlerPriority, BaseAffair, Handler, Filter
+    from pypbbot.affairs import BaseAffair, Handler, Filter
 
-from pypbbot.logging import logger
-from pypbbot.utils import sendBackClipsTo, Clips, partial_filter
 from pypbbot.affairs import ChatAffair
 from pypbbot.typing import LoadingEvent, UnloadingEvent
 
 __all__ = ['_unfilterable', '_on_loading', '_on_unloading',
            '_on_starts_with_filter', '_union_filter', 'UnionFilter']
+
+
+def partial_filter(func: Any, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Filter:
+    pfunc = partial(func, *args, **kwargs)
+    setattr(pfunc, '__name__', "{}[{}]".format(
+        partial.__name__, func.__name__))
+    return pfunc
 
 
 def _unfilterable(_: BaseAffair) -> bool:
