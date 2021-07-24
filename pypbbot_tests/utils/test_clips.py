@@ -1,6 +1,7 @@
 from pypbbot.utils import Clips
 
-def test_clips_add():
+
+def test_clips_add() -> None:
     a = Clips.from_str('aA')
     b = Clips.from_str('bB')
     assert str(a + b) == 'aAbB'

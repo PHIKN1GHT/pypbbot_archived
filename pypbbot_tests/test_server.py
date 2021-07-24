@@ -17,7 +17,7 @@ def test_connect() -> None:
 # pytest -rx pypbbot_tests
 
 
-def test_websocket():
+def test_websocket() -> None:
     total_times = 50000
     logger.disable('pypbbot')
     with client.websocket_connect("/ws/") as ws:

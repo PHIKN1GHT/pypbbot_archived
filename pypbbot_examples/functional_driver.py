@@ -10,7 +10,7 @@ i, lock = 0, LazyLock()
 akkarin_url = 'https://img.moegirl.org.cn/common/thumb/b/b7/Transparent_Akkarin.jpg/250px-Transparent_Akkarin.jpg'
 
 
-async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]):
+async def sayHello(event: Union[PrivateMessageEvent, GroupMessageEvent]) -> None:
     if event.raw_message.startswith('#hello'):
         global i
         await sendBackClipsTo(event, 'Hello, world! x {}'.format(i))

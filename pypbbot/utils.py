@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from functools import wraps, partial
 
 import typing
@@ -157,9 +158,9 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
     return await pypbbot.server.send_frame(event.self_id, api_content)
 
 
-def asyncify(func):
+def asyncify(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     @wraps(func)
-    async def run(*args, loop=None, executor=None, **kwargs):
+    async def run(*args: Any, loop: Optional[asyncio.AbstractEventLoop] = None, executor: Any = None, **kwargs: Any) -> Any:
         if loop is None:
             loop = get_event_loop()
         pfunc = partial(func, *args, **kwargs)

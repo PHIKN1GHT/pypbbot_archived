@@ -20,7 +20,7 @@ async def _(affair: ChatAffair) -> None:
 
 
 @onStartsWith('#hsync')
-def _(affair: ChatAffair) -> None:
+def sync_(affair: ChatAffair) -> None:
     global i, lock
     print(i)
     i += 1
