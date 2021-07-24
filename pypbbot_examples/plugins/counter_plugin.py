@@ -19,6 +19,14 @@ async def _(affair: ChatAffair) -> None:
         i += 1
 
 
+@onStartsWith('#hsync')
+def _(affair: ChatAffair) -> None:
+    global i, lock
+    print(i)
+    i += 1
+    affair.sendAndWait('asd{}'.format(i))
+
+
 @onLoading()  # 插件加载时触发
 async def _loading(affair: BaseAffair) -> None:
     logger.debug('Counter plugin has been enabled! ')

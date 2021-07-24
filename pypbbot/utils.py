@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import wraps, partial
 
 import typing
 if typing.TYPE_CHECKING:
@@ -154,3 +155,13 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
         api_content.group_id, auto_escape = event.group_id, True
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
+
+
+def asyncify(func):
+    @wraps(func)
+    async def run(*args, loop=None, executor=None, **kwargs):
+        if loop is None:
+            loop = get_event_loop()
+        pfunc = partial(func, *args, **kwargs)
+        return await loop.run_in_executor(executor, pfunc)
+    return run

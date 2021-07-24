@@ -9,6 +9,7 @@ if typing.TYPE_CHECKING:
     from pypbbot.protocol import GroupMessageEvent, PrivateMessageEvent
 
 from enum import Enum
+import asyncio
 from pypbbot.logging import logger
 from pypbbot.utils import sendBackClipsTo
 
@@ -51,3 +52,6 @@ class ChatAffair(BaseAffair):
 
     async def send(self, clips: Union[Clips, str, int, float]) -> Any:
         return await sendBackClipsTo(self.event, clips)
+
+    def sendAndWait(self, clips: Union[Clips, str, int, float]) -> Any:
+        return asyncio.run(self.send(clips))

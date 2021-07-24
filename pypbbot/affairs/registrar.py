@@ -7,6 +7,7 @@ from .filters import _unfilterable
 from .filters import _on_starts_with_filter
 
 import typing
+from typing import Callable, Coroutine, Any
 if typing.TYPE_CHECKING:
     from typing import Optional, Callable, Coroutine, Any
     from pypbbot.affairs import ChatAffair,  Filter, HandlerDecorator, BaseAffair
@@ -16,6 +17,9 @@ from pypbbot.logging import logger
 from pypbbot.plugin import _register
 from pypbbot.affairs.filters import partial_filter
 from pypbbot.affairs import HandlerPriority, ChatAffair
+from pypbbot.utils import asyncify
+import inspect
+
 
 __all__ = ['useFilter', 'unfilterable', 'onPrivateMessage', 'onGroupMessage',
            'onStartsWith', 'onEndsWith', 'onLoading', 'onUnloading', 'onMessage']
@@ -41,6 +45,10 @@ def useFilter(ftr: Filter, priority: HandlerPriority = HandlerPriority.NORMAL) -
 
     def decorator(func: Callable[[BaseAffair], Coroutine[Any, Any, None]]) -> Callable[[BaseAffair], Coroutine[Any, Any, None]]:
         # DO NOT USE LAMBDA EXPRESSION
+        if not inspect.iscoroutinefunction(func):
+            func = asyncify(func)
+            logger.warning(
+                "Function {} has been asyncified for being registered.".format(func.__name__))
 
         _register(ftr.__name__, ftr, func, priority)
 
