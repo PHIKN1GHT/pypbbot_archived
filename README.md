@@ -1,3 +1,5 @@
+# 此Repo因提交记录太乱已废弃，新Repo已重开。
+
 # PyProtobufBot
 
 <p align="center">
