@@ -13,6 +13,7 @@ from pypbbot.protocol import PrivateMessageEvent, GroupMessageEvent
 from pypbbot.logging import logger
 from pypbbot.plugin import _handle as handleAffair
 from pypbbot.typing import ProtobufBotEvent, Event
+import inspect
 
 
 class BaseDriver:
@@ -47,7 +48,10 @@ class BaseDriver:
 
     async def handle(self, event: ProtobufBotEvent) -> None:
         if type(event) in self._handler_registry.keys():
-            await self._handler_registry[type(event)](event)
+            if inspect.iscoroutinefunction(self._handler_registry[type(event)]):
+                await self._handler_registry[type(event)](event)
+            else:
+                self._handler_registry[type(event)](event)
 
     async def sendBackClips(self, event: Union[PrivateMessageEvent, GroupMessageEvent],
                             clips: Union[Clips, str, int, float]) -> Optional[ProtobufBotAPI]:

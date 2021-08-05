@@ -114,6 +114,9 @@ class LRULimitedDict(Mapping[KT, VT]):
         if len(self.cache) > self.capacity:
             self.cache.popitem(last=False)
 
+    def __delitem__(self, key: KT) -> None:
+        del self.cache[key]
+
     def keys(self) -> _OrderedDictKeysView[KT]:
         return self.cache.keys()
 
@@ -156,6 +159,14 @@ async def sendBackClipsTo(event: Union[GroupMessageEvent, PrivateMessageEvent], 
         api_content.group_id, auto_escape = event.group_id, True
     api_content.message.extend(clips.toMessageList())
     return await pypbbot.server.send_frame(event.self_id, api_content)
+
+
+def sendBackClipsToAndWait(event: Union[GroupMessageEvent, PrivateMessageEvent], clips: Union[Clips, str, int, float]) -> Optional[ProtobufBotAPI]:
+    loop = asyncio.get_event_loop()
+    if loop is None:
+        return asyncio.run(sendBackClipsTo(event, clips))
+    else:
+        return loop.create_task(sendBackClipsTo(event, clips)).result()
 
 
 def asyncify(func: Callable[[Any], Any]) -> Callable[[Any], Any]:

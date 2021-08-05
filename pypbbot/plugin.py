@@ -62,6 +62,7 @@ async def load_plugins(*plugin_dir: str) -> Dict[str, ModuleType]:
     for _dir in plugin_dir:
         if not os.path.exists(_dir):
             os.makedirs(_dir)
+
     for module_finder, name, _ in pkgutil.iter_modules(plugin_dir):
         logger.info('Loading module [{}] ...'.format(name))
         if isinstance(module_finder, PathEntryFinder):  # Hack for Type Check

@@ -3,7 +3,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from asyncio import Future
-    from typing import Tuple, Optional, Type
+    from typing import Tuple, Optional, Type, Callable, Any, Union
     from pypbbot.driver import Drivable
     from pypbbot.typing import ProtobufBotAPI
 import asyncio
@@ -21,7 +21,8 @@ from starlette.websockets import WebSocketDisconnect
 
 
 class PyPbBotApp(FastAPI):
-    driver_builder: Optional[Type[BaseDriver]] = None
+    driver_builder: Optional[Type[BaseDriver]] | Callable[[Any], Any] = None
+    plugin_path: Optional[str]
 
 
 app = PyPbBotApp()
@@ -29,6 +30,7 @@ loop = None
 drivers: LRULimitedDict[int, Tuple[WebSocket, Drivable]] = LRULimitedDict()
 resp_cache: LRULimitedDict[str,
                            Future[Optional[ProtobufBotAPI]]] = LRULimitedDict()
+alive_clients: LRULimitedDict[str, int] = LRULimitedDict()
 
 
 @app.on_event("startup")
@@ -37,8 +39,8 @@ async def init() -> None:
     """
     global loop
     loop = asyncio.get_running_loop()
-    if hasattr(app, 'plugin_path'):
-        await load_plugins(getattr(app, 'plugin_path'))
+    if type(app.plugin_path) is str:
+        await load_plugins(app.plugin_path)
     logger.info('Everything is almost ready. Hello, PyProtobufBot world!')
     await AffairDriver().handle(LoadingEvent())
 
@@ -54,6 +56,10 @@ async def handle_websocket(websocket: WebSocket) -> None:
     await websocket.accept()
     logger.info('Accepted client from {}:{}'.format(
         websocket.client.host, websocket.client.port))
+    client_addr = "{}:{}".format(
+        websocket.client.host, websocket.client.port)
+    alive_clients[client_addr] = -1
+
     while True:
         try:
             rawdata: bytes = await websocket.receive_bytes()
@@ -61,9 +67,11 @@ async def handle_websocket(websocket: WebSocket) -> None:
             frame.ParseFromString(rawdata)
 
             if not frame.botId in drivers.keys():
-                if app.driver_builder is None:
-                    app.driver_builder = BaseDriver
-                driver_builder = getattr(app, 'driver_builder')
+
+                alive_clients[client_addr] = frame.botId
+                driver_builder = app.driver_builder
+                if driver_builder is None:
+                    driver_builder = BaseDriver
 
                 if inspect.isclass(driver_builder):
                     drivers[frame.botId] = (
@@ -75,8 +83,14 @@ async def handle_websocket(websocket: WebSocket) -> None:
                 drivers[frame.botId] = (websocket, dri)
             await recv_frame(frame, frame.botId)
         except WebSocketDisconnect:
-            logger.warning('Connection to {} has been closed.'.format(
-                websocket.client.host))
+            client_addr = "{}:{}".format(
+                websocket.client.host, websocket.client.port)
+            client_id: Union[str, int] = "UNKNOWN"
+            if alive_clients[client_addr] != -1:
+                client_id = alive_clients[client_addr]
+                del drivers[client_id]
+            logger.warning('Connection to {} has been closed, lost connection with [{}] '.format(
+                client_addr, client_id))
             break
         # asyncio.create_task(recv_frame(frame, frame.botId))
 

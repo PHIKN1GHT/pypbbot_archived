@@ -7,7 +7,7 @@ from .filters import _unfilterable
 from .filters import _on_starts_with_filter
 
 import typing
-from typing import Callable, Coroutine, Any
+from typing import Callable, Coroutine, Any, List
 if typing.TYPE_CHECKING:
     from typing import Optional, Callable, Coroutine, Any
     from pypbbot.affairs import ChatAffair,  Filter, HandlerDecorator, BaseAffair
@@ -32,17 +32,17 @@ def useFilter(ftr: Filter, priority: HandlerPriority = HandlerPriority.NORMAL) -
         priority: the priority of the handler
     '''
     try:
-        name = getattr(ftr, '__name__')
+        getattr(ftr, '__name__')
     except AttributeError:
         logger.error(
             'Unnamed filter funcion detected. You SHOULD NOT use lambda expression.')
-        setattr(ftr, '__name__', '[unknown]')
-
-    try:
-        getattr(useFilter, ftr.__name__)
-    except AttributeError:
-        setattr(useFilter, ftr.__name__, ftr)
-
+        setattr(ftr, '__name__', '[UNKNOWN]')
+    '''
+        try:
+            getattr(useFilter, ftr.__name__)
+        except AttributeError:
+            setattr(useFilter, ftr.__name__, ftr)
+    '''
     def decorator(func: Callable[[BaseAffair], Coroutine[Any, Any, None]]) -> Callable[[BaseAffair], Coroutine[Any, Any, None]]:
         # DO NOT USE LAMBDA EXPRESSION
         if not inspect.iscoroutinefunction(func):
@@ -52,7 +52,7 @@ def useFilter(ftr: Filter, priority: HandlerPriority = HandlerPriority.NORMAL) -
 
         _register(ftr.__name__, ftr, func, priority)
 
-        @ functools.wraps(func)
+        @functools.wraps(func)
         def wrapper(affair: BaseAffair) -> Coroutine[Any, Any, None]:
             return func(affair)
         return wrapper
@@ -110,3 +110,36 @@ def onMessage(priority: HandlerPriority = HandlerPriority.NORMAL) -> HandlerDeco
     def _message_filter(_: BaseAffair) -> bool:
         return isinstance(_, ChatAffair)
     return useFilter(_message_filter, priority)
+
+
+def onAllSatisfied(filter_helpers: List[Filter, Any], priority: HandlerPriority = HandlerPriority.NORMAL) -> HandlerDecorator:
+    # args 1 should be named tuples
+    global useFilter
+    _useFilter: Callable[[Filter, HandlerPriority],
+                         HandlerDecorator] = useFilter
+    ftrs: List[Filter] = []
+
+    def getAllNamedFilters(ftr: Filter, *args: Any) -> None:
+        try:
+            getattr(ftr, '__name__')
+        except AttributeError:
+            setattr(ftr, '__name__', '[UNKNOWN]')
+        ftrs.append(ftr)
+
+    useFilter: Callable = getAllNamedFilters
+    for fhelper in filter_helpers:
+        ftr, params = fhelper[0], fhelper[1:]
+        ftr(*params)
+    useFilter: Callable = _useFilter
+
+    def _on_all_satisfied_(affair: BaseAffair) -> bool:
+        result = True
+        for ftr in ftrs:
+            if not result:
+                return
+            result = result and ftr(affair)
+        return result
+
+    _on_all_satisfied_.__name__ = "_on_all_satisfied:" + \
+        "&".join([ftr.__name__ for ftr in ftrs])
+    return useFilter(_on_all_satisfied_, priority)

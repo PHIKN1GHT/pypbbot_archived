@@ -2,11 +2,22 @@ site_name: Pypbbot 0.2a7
 site_url: https://pypbbot.kale1d0.space/
 nav:
   - 新手指南:
-      - 概览: getting-start\introduction.md
-      - 基本概念: getting-start\basic-concepts.md
-      - 插件化开发: getting-start\basic-concepts.md
-  - 高级主题:
-      - 生命周期: advanced\life-circle.md
+      - 概览: getting-started\introduction.md
+      - 安装与使用: getting-started\installation-and-usage.md
+      - 配置管理: getting-started\configuration-management.md
+      - 插件市场: getting-started\plugin-market.md
+  - 插件开发教程:
+      - 项目创建: plugin-development-tutorials\creating-project.md
+      - 基本概念: plugin-development-tutorials\basic-concepts.md
+      - 数据持久化: plugin-development-tutorials\data-persistence.md
+      - 事务处理: plugin-development-tutorials\handling-affairs.md
+      - 权限系统: plugin-development-tutorials\permission-system.md
+      - 定时器与任务调度: plugin-development-tutorials\timer-and-scheduler.md
+      - 日志与快照: plugin-development-tutorials\logs-and-snapshots.md
+      - 仿真与测试: plugin-development-tutorials\simulation-and-testing.md
+      - 跨插件调用: plugin-development-tutorials\cross-plugin-invocation.md
+      - 打包与分发: plugin-development-tutorials\packaging-and-distribution.md
+      - 异步编程: plugin-development-tutorials\blank.md
 theme:
   name: material
   language: zh
@@ -16,6 +27,7 @@ theme:
     primary: white
 markdown_extensions:
   - attr_list
+  - admonition
   - pymdownx.highlight
   - pymdownx.superfences
 extra:
